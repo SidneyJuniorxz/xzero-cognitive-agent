@@ -1,4 +1,64 @@
-# ⚡ X-ZERO Open Edition — Autonomous On-Device Android Cognitive Agent, Proactive Co-Pilot, Sensor Fusion, $Q(s,a)$ Policy & MCP Bridge
+<div align="center">
+
+# X-ZERO · Cognitive Android Agent
+
+### Um agente cognitivo para Android, com avatar vivo, automação contextual, memória e integração MCP
+
+<img src="app/src/main/res/drawable/ic_xenon.png" alt="Xenon — identidade visual do X-Zero" width="170" />
+
+**Android / Kotlin · AccessibilityService · Node.js · MCP · Memória híbrida · Sensor Fusion**
+
+[Começar](#-quickstart--começando-em-5-minutos) · [Arquitetura](#-arquitetura-dos-mcps-e-do-second-brain-como-eu-conectei-e-o-que-você-precisa-ter) · [Recursos](#-por-que-este-repositório-existe-o-que-há-de-novo-para-o-mundo-da-ia) · [Documentação técnica](docs/ARQUITETURA_TECNICA.md) · [Contribuir](#-contribua-com-este-sonho)
+
+</div>
+
+> **Status:** projeto experimental e open-source, em evolução. Parte das integrações exige serviços externos e configuração própria. As capacidades abaixo refletem a implementação documentada no repositório; não representam garantia de autonomia irrestrita nem operação segura em qualquer aparelho.
+
+## 👀 Conheça o X-Zero
+
+O **X-Zero** pesquisa como um assistente pode perceber o contexto do Android, planejar ações, verificar seus resultados e continuar tarefas sem se limitar a uma conversa em uma janela de chat. Seu avatar visual, **Xenon**, apresenta informações e sugestões diretamente na interface do dispositivo.
+
+| No dispositivo | Fora do dispositivo |
+| --- | --- |
+| Acessibilidade, ações na interface e verificação de objetivos | Dashboard de observabilidade e ponte MCP opcional |
+| Sensores, eventos, voz e avatar Xenon | Second Brain, cloud e serviços conectados por contratos |
+| Memória local, rotas e regras de segurança | Backups e integrações que dependem de configuração |
+
+### Galeria visual — assets reais do projeto
+
+<p align="center">
+  <img src="app/src/main/res/drawable/xenon_cognitive_spritesheet.png" alt="Spritesheet cognitivo do Xenon" width="43%" />
+  <img src="app/src/main/res/drawable/xenon_motion_spritesheet.png" alt="Spritesheet de movimentos do Xenon" width="43%" />
+</p>
+
+<p align="center"><em>Assets de animação incluídos no código-fonte; não são capturas de tela do aplicativo em execução.</em></p>
+
+<p align="center">
+  <img src="app/src/main/res/drawable/xenon_emotions_spritesheet.webp" alt="Expressões do avatar Xenon" width="43%" />
+  <img src="app/src/main/res/drawable/xenon_interactions_spritesheet.png" alt="Interações visuais do Xenon" width="43%" />
+</p>
+
+> **Capturas reais do app e dashboard:** ainda não publicadas nesta galeria. Arquivos de backup pessoais no Google Drive não foram incorporados ao repositório público; antes de adicionar prints ou trechos de vídeo, remova notificações, contatos, nomes, URLs internas, coordenadas, tokens e identificadores do dispositivo. Sugestão de pasta para futuros screenshots revisados: `docs/images/`.
+
+### Como os componentes se comunicam
+
+```mermaid
+flowchart TD
+  U["Pessoa e ambiente físico"] --> A["X-Zero · Android / Kotlin"]
+  A --> S["Accessibility + Sensores + Voz"]
+  A --> C["Harness cognitivo / verificação de objetivo"]
+  C --> M["Memória híbrida + rotas + regras"]
+  A <--> X["Xenon · Avatar e overlay"]
+  A <--> B["Ponte MCP opcional · Node.js"]
+  B --> D["Dashboard de observabilidade"]
+  B --> E["Serviços externos / Second Brain / Backups"]
+```
+
+### Uso responsável e privacidade
+
+O agente pode operar interfaces, observar eventos do telefone e executar comandos. **Teste primeiro em aparelho de desenvolvimento**, conceda apenas as permissões necessárias, mantenha tokens fora do Git e revise ações potencialmente destrutivas (exclusão de arquivos, envio de mensagens, configurações e backups). A presença de mecanismos de confirmação no código não substitui uma auditoria de segurança independente.
+
+---
 
 > ### 🌍 Um Sonho Sem Fins Lucrativos para um Mundo Cada Vez Mais Conectado
 > **X-Zero (ADA / Xenon / Reploid)** nasceu de um sonho pessoal: tirar a Inteligência Artificial de dentro de janelas passivas de chat e transformá-la em um **parceiro cognitivo vivo, ético, proativo e consciente do ambiente físico** — morando diretamente no dispositivo que nos acompanha todos os dias.
