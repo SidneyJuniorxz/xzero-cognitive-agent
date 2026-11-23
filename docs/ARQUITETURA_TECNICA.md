@@ -74,7 +74,7 @@ flowchart LR
 
 Gravador integrado ao app para criar vídeos de demonstração no próprio Android:
 - **Captura de Tela:** `MediaProjection` + `VirtualDisplay` em `MediaCodec` H.264 (`video/avc`, 30 fps).
-- **Janela PiP Flutuante de Câmera:** `TextureView` arrastável com botão explícito **`📷 Traseira`** / **`🤳 Frontal`** (alterna frontal ↔ traseira em ~300 ms sem parar a gravação; necessário porque o HAL do Motorola Edge 30 retorna `concurrentSets: []`).
+- **Janela PiP Flutuante de Câmera:** `TextureView` arrastável com botão explícito **`📷 Traseira`** / **`🤳 Frontal`** (alterna frontal ↔ traseira em ~300 ms sem parar a gravação; relevante para aparelhos cujo HAL de câmera retorna `concurrentSets: []`).
 - **Áudio Duplo (Mixer AAC):**
   - Voz do usuário via `VoiceActivityDetector.onPcmFrameListener` (com fallback automático para `AudioRecord(MIC)` quando o Modo Live estiver desativado).
   - Áudio interno do X-Zero (TTS) via `AudioPlaybackCaptureConfiguration`.
