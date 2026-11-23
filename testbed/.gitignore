@@ -1,0 +1,4 @@
+# artefatos locais do banco de testes
+jvm/build/
+jvm/.gradle/
+**/__pycache__/

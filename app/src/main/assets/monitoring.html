@@ -1,0 +1,1219 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Monitor XZERO - Raciocínio em Tempo Real</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'SF Mono', Monaco, Menlo, 'Ubuntu Mono', monospace;
+            background: radial-gradient(circle at top right, #0b1e38 0%, #060b16 55%, #04070f 100%);
+            color: #e2e8f0;
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            background: linear-gradient(135deg, rgba(11, 22, 44, 0.92), rgba(7, 13, 28, 0.95));
+            border: 1px solid #1e3a5f;
+            border-bottom: 2px solid #00f5d4;
+            box-shadow: 0 8px 28px rgba(0, 245, 212, 0.08);
+            padding: 18px 20px;
+            margin-bottom: 18px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            color: #00f5d4;
+            font-size: 22px;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        .status-indicator.connected {
+            background: #00ff88;
+            box-shadow: 0 0 10px #00ff88;
+        }
+
+        .status-indicator.disconnected {
+            background: #ff4444;
+            box-shadow: 0 0 10px #ff4444;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+
+        .hist-split {
+            display: grid;
+            grid-template-columns: minmax(260px, 1fr) minmax(300px, 1.4fr);
+            gap: 12px;
+        }
+
+        .panel {
+            background: rgba(13, 21, 38, 0.92);
+            border: 1px solid #1e3a5f;
+            border-radius: 12px;
+            padding: 18px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+            backdrop-filter: blur(10px);
+        }
+
+        .panel h2 {
+            color: #38bdf8;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 16px;
+        }
+
+        .thinking-step {
+            background: rgba(30, 30, 50, 0.5);
+            border-left: 3px solid #00ff88;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .thinking-step.phase {
+            border-left-color: #ffaa00;
+        }
+
+        .thinking-step.error {
+            border-left-color: #ff4444;
+        }
+
+        .thinking-step.success {
+            border-left-color: #00ff88;
+        }
+
+        .metric-card {
+            background: rgba(30, 30, 50, 0.6);
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .metric-label {
+            color: #00ff88;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .metric-value {
+            font-size: 18px;
+            font-weight: bold;
+            color: #fff;
+            margin-top: 5px;
+        }
+
+        .error-box {
+            background: rgba(255, 68, 68, 0.1);
+            border-left: 3px solid #ff4444;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .error-type {
+            color: #ff4444;
+            font-weight: bold;
+            font-size: 12px;
+        }
+
+        .error-reason {
+            color: #ffaa00;
+            font-size: 11px;
+            margin-top: 5px;
+        }
+
+        .suggestion {
+            color: #00ff88;
+            font-size: 11px;
+            margin-top: 5px;
+            padding: 5px;
+            background: rgba(0, 255, 136, 0.1);
+            border-radius: 3px;
+        }
+
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 10px;
+            padding: 8px;
+            background: rgba(30, 30, 50, 0.5);
+            border-radius: 4px;
+            font-size: 11px;
+        }
+
+        .timeline-marker {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 3px;
+            background: #00ff88;
+        }
+
+        .timeline-marker.error {
+            background: #ff4444;
+        }
+
+        .timeline-marker.warning {
+            background: #ffaa00;
+        }
+
+        .success-rate {
+            font-size: 24px;
+            font-weight: bold;
+            text-align: center;
+            padding: 15px;
+            border-radius: 6px;
+            background: rgba(0, 255, 136, 0.1);
+            color: #00ff88;
+            margin: 10px 0;
+        }
+
+        .success-rate.warning {
+            background: rgba(255, 170, 0, 0.1);
+            color: #ffaa00;
+        }
+
+        .success-rate.error {
+            background: rgba(255, 68, 68, 0.1);
+            color: #ff4444;
+        }
+
+        .recommendations {
+            background: rgba(0, 255, 136, 0.1);
+            border-left: 3px solid #00ff88;
+            padding: 10px;
+            border-radius: 4px;
+            font-size: 12px;
+            list-style: none;
+        }
+
+        .recommendations li {
+            margin-bottom: 8px;
+            color: #e0e0e0;
+        }
+
+        .recommendations li:before {
+            content: "✓ ";
+            color: #00ff88;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .scroll-container {
+            overflow-y: auto;
+            max-height: 350px;
+        }
+
+        .scroll-container::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .scroll-container::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+
+        .scroll-container::-webkit-scrollbar-thumb {
+            background: #00ff88;
+            border-radius: 3px;
+        }
+
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+            font-size: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin-top: 20px;
+        }
+
+        .latency {
+            display: inline-block;
+            margin-left: 10px;
+            padding: 2px 8px;
+            background: rgba(0, 255, 136, 0.2);
+            border-radius: 3px;
+            font-size: 11px;
+            color: #00ff88;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                grid-template-columns: 1fr;
+            }
+
+            h1 {
+                font-size: 18px;
+            }
+
+            /*
+             * Medido em 375x812: o header é `display:flex` com `justify-content:
+             * space-between` e nenhum wrap, então o bloco `.status` (Status + bolinha +
+             * texto) era empurrado 29px fora da viewport. O `overflow-x: hidden` do body
+             * escondia o estouro em vez de resolvê-lo: o indicador de conexão — a única
+             * coisa que diz se o monitor está vivo — ficava cortado e inalcançável.
+             */
+            header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 10px;
+                padding: 14px;
+            }
+
+            h1 {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .status {
+                flex-wrap: wrap;
+                gap: 8px;
+            }
+
+            .container {
+                padding: 12px;
+            }
+
+            .panel {
+                padding: 14px;
+            }
+
+            .hist-split {
+                grid-template-columns: 1fr;
+            }
+
+            .tabbar {
+                flex-wrap: nowrap;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                padding-bottom: 2px;
+            }
+            .tabbar::-webkit-scrollbar { display: none; }
+            .tabbtn {
+                white-space: nowrap;
+                flex-shrink: 0;
+                padding: 10px 14px;
+                font-size: 12px;
+            }
+        }
+
+        /* Alvos de toque: 5 controles mediam menos de 44px de altura. Este painel é
+           aberto no próprio celular (:3030), onde tudo é operado com o polegar. */
+        @media (pointer: coarse) {
+            .tabbtn, button, input, select {
+                min-height: 44px;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .status-indicator {
+                animation: none;
+            }
+        }
+
+        /* ===== Abas ===== */
+        .tabbar { display:flex; gap:8px; margin:16px 0 4px; flex-wrap:wrap; }
+        .tabbtn {
+            background:#0F172A; border:1px solid #263554; color:#94A3B8;
+            padding:10px 18px; border-radius:10px 10px 0 0; cursor:pointer;
+            font-family:inherit; font-size:13px; font-weight:600; transition:all .18s;
+        }
+        .tabbtn:hover { color:#E2E8F0; border-color:#38BDF8; }
+        .tabbtn.active { background:#111c33; color:#00ff88; border-color:#00ff88; border-bottom-color:#111c33; }
+        .tab-panel { display:none; }
+        .tab-panel.active { display:block; }
+
+        /* ===== Documentação (estática, sem servidor) ===== */
+        .doc { background:#0B1220; border:1px solid #263554; border-radius:14px; padding:22px; margin-top:12px; }
+        .doc h2 { color:#00ff88; font-size:17px; margin:26px 0 10px; border-bottom:1px solid #1E293B; padding-bottom:6px; }
+        .doc h2:first-child { margin-top:0; }
+        .doc h3 { color:#38BDF8; font-size:14px; margin:18px 0 6px; }
+        .doc p, .doc li { color:#CBD5E1; font-size:13px; line-height:1.75; }
+        .doc ul { margin:6px 0 10px 20px; }
+        .doc code { background:#162033; color:#7DD3FC; padding:2px 6px; border-radius:4px; font-size:12px; }
+        .doc .why { color:#FBBF24; }
+        .doc table { width:100%; border-collapse:collapse; margin:10px 0; font-size:12px; display:block; overflow-x:auto; }
+        .doc th { background:#162033; color:#94A3B8; text-align:left; padding:8px 10px; border-bottom:1px solid #263554; white-space:nowrap; }
+        .doc td { padding:8px 10px; border-bottom:1px solid #16203340; color:#CBD5E1; vertical-align:top; }
+        .doc tr:hover td { background:#0F172A; }
+        .doc .tag { display:inline-block; background:#162033; border:1px solid #334155; color:#7DD3FC;
+                    padding:2px 8px; border-radius:20px; font-size:11px; margin:2px 4px 2px 0; }
+        .doc .names { display:flex; gap:8px; flex-wrap:wrap; margin:10px 0; }
+        .doc .name { background:linear-gradient(135deg,#0F172A,#162033); border:1px solid #8B5CF6;
+                     color:#C4B5FD; padding:8px 14px; border-radius:10px; font-weight:700; font-size:13px; }
+        .doc .callout { background:#0F172A; border-left:3px solid #00ff88; padding:10px 14px; margin:10px 0; border-radius:0 8px 8px 0; }
+        .doc .callout.warn { border-left-color:#F97316; }
+        .doc svg { max-width:100%; height:auto; display:block; margin:12px 0; }
+        .doc .lead { color:#94A3B8; font-size:13px; font-style:italic; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>
+                🔍 XZERO Monitor
+                <span class="latency" id="latency">↔ 0ms</span>
+            </h1>
+            <div class="status">
+                <span>Status:</span>
+                <div class="status-indicator connected" id="statusIndicator"></div>
+                <span id="statusText">Conectando...</span>
+            </div>
+        </header>
+
+        <div class="tabbar">
+            <button class="tabbtn active" data-tab="monitor">📡 Monitor ao Vivo</button>
+            <button class="tabbtn" data-tab="watches">👁️ Vigias & Agenda</button>
+            <button class="tabbtn" data-tab="energy">🔋 Energia & Sensores</button>
+            <button class="tabbtn" data-tab="estudo">📚 Estudo do Sistema</button>
+            <a href="/harness" class="tabbtn" style="text-decoration:none;border-color:#38bdf8;color:#38bdf8;">🏛️ Painel Gerencial Harness</a>
+        </div>
+
+        <div id="tab-monitor" class="tab-panel active">
+        <div class="dashboard">
+            <!-- Painel 1: Raciocínio -->
+            <div class="panel">
+                <h2>🧠 Raciocínio em Tempo Real</h2>
+                <div class="scroll-container" id="thinkingPanel">
+                    <div style="color: #666; text-align: center; padding: 20px;">
+                        Aguardando dados...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Painel 2: Erros -->
+            <div class="panel">
+                <h2>⚠️ Erros Detectados</h2>
+                <div class="scroll-container" id="errorsPanel">
+                    <div style="color: #666; text-align: center; padding: 20px;">
+                        Nenhum erro detectado até agora
+                    </div>
+                </div>
+            </div>
+
+            <!-- Painel 3: Métricas -->
+            <div class="panel">
+                <h2>📊 Métricas da Sessão</h2>
+                <div id="metricsPanel">
+                    <div class="metric-card">
+                        <div class="metric-label">Taxa de Acerto</div>
+                        <div class="metric-value" id="successRate">--</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Tempo Médio</div>
+                        <div class="metric-value" id="avgTime">--</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Confiança Média</div>
+                        <div class="metric-value" id="avgConfidence">--</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-label">Total de Ações</div>
+                        <div class="metric-value" id="totalActions">--</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Painel 4: Timeline -->
+            <div class="panel">
+                <h2>📈 Timeline de Ações</h2>
+                <div class="timeline" id="timelinePanel">
+                    <div style="color: #666; text-align: center; padding: 20px;">
+                        Aguardando ações...
+                    </div>
+                </div>
+            </div>
+
+            <!-- Painel 5: Score de Qualidade -->
+            <div class="panel">
+                <h2>⭐ Qualidade Geral</h2>
+                <div id="qualityPanel">
+                    <div class="success-rate" id="qualityScore">--/100</div>
+                    <div class="recommendations" id="recommendations">
+                        <li>Aguardando dados...</li>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Painel 6: Resumo -->
+            <div class="panel">
+                <h2>📋 Resumo</h2>
+                <div id="summaryPanel" style="font-size: 12px; white-space: pre-wrap; color: #00ff88;">
+                    Conectando ao servidor...
+                </div>
+            </div>
+            <!-- Painel 7: Áudio / Voz (acordar + aceitar a ação) -->
+            <div class="panel">
+                <h2>🎙️ Áudio &amp; Voz</h2>
+                <div id="audioPanel" style="font-size:12px;color:#00ff88;">
+                    <div class="metric-card">
+                        <div class="metric-label">Estado do Microfone</div>
+                        <div class="metric-value" id="micState" style="font-size:18px;">--</div>
+                    </div>
+                    <div style="margin:10px 0;font-family:monospace;line-height:1.7;">
+                        <div>nível  <span id="audioRms">--</span> dBFS
+                            <div style="background:#111;height:8px;border-radius:4px;overflow:hidden;margin-top:2px;">
+                                <div id="audioRmsBar" style="height:100%;width:0%;background:#00ff88;"></div>
+                            </div>
+                        </div>
+                        <div>piso de ruído <span id="audioFloor">--</span> dBFS · limiar <span id="audioThreshold">--</span> dBFS</div>
+                        <div>SNR atual <span id="audioSnr">--</span> dB · margem limiar−piso <span id="audioHeadroom">--</span> dB</div>
+                    </div>
+                    <div style="border-top:1px solid #222;padding-top:8px;line-height:1.7;">
+                        <div>disparos do VAD: <b id="audioTriggers">--</b> · sem transcrição: <b id="audioFalse">--</b> (<span id="audioFalseRate">--</span>%)</div>
+                        <div>latência média até transcrever: <b id="audioLatency">--</b> ms · SNR médio no disparo: <b id="audioSnrAvg">--</b> dB</div>
+                        <div>descartes anti-eco: <b id="audioEcho">--</b> (em confirmação: <b id="audioEchoConfirm">--</b>)</div>
+                        <div>confirmações aceitas: <b id="audioConfirms">--</b> (<span id="audioConfirmRate">--</span>%)</div>
+                    </div>
+                    <div style="border-top:1px solid #222;margin-top:8px;padding-top:8px;">
+                        <div style="color:#888;margin-bottom:4px;">últimos despertares</div>
+                        <div id="audioWakeList" style="font-family:monospace;font-size:11px;color:#9f9;">aguardando voz…</div>
+                        <div style="color:#888;margin:6px 0 4px;">últimas confirmações</div>
+                        <div id="audioConfirmList" style="font-family:monospace;font-size:11px;color:#9cf;">aguardando confirmação…</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Painel 8: Monitor Histórico de Interações (Passo a Passo) -->
+            <div class="panel" style="grid-column: 1 / -1;">
+                <h2>📜 Monitor Histórico de Interações (Clique para inspecionar cada passo)</h2>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center;">
+                    <input id="histSearch" placeholder="Filtrar por pedido, app ou resposta..." style="flex:1;min-width:180px;background:#0a0e1a;color:#e2e8f0;border:1px solid #334155;padding:6px 10px;border-radius:6px;" oninput="renderHistoryList()" />
+                    <select id="histFilter" style="background:#0a0e1a;color:#e2e8f0;border:1px solid #334155;padding:6px 10px;border-radius:6px;" onchange="renderHistoryList()">
+                        <option value="all">Todas</option>
+                        <option value="success">✅ Sucesso</option>
+                        <option value="non_success">⚠️ Falha / Timeout / Loop</option>
+                    </select>
+                    <button onclick="loadHistorySessions()" style="background:#1d4ed8;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;">🔄 Atualizar Histórico</button>
+                </div>
+                <div class="hist-split">
+                    <div id="histSessionsList" class="scroll-container" style="max-height:360px;">Carregando histórico de interações...</div>
+                    <div id="histSessionDetail" class="scroll-container" style="max-height:360px;background:#070b14;border:1px solid #1e293b;border-radius:8px;padding:10px;">
+                        <div style="color:#888;text-align:center;padding:24px;">Selecione uma interação à esquerda para ver o plano, pensamento, ação e resultado de cada passo.</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        </div><!-- /tab-monitor -->
+
+        <div id="tab-watches" class="tab-panel">
+            <div class="dashboard">
+                <div class="panel">
+                    <h2>👁️ Vigias & Atividades Agendadas <span id="monWatchCount" style="color:#00ff88;font-size:12px;">0 ativas</span></h2>
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;">
+                        <select id="monWatchSrc" style="background:#0a0e1a;color:#e2e8f0;border:1px solid #334155;padding:6px;border-radius:6px;">
+                            <option value="unlock">🔓 Desbloqueio</option>
+                            <option value="whatsapp">💬 WhatsApp</option>
+                            <option value="email">📧 E-mail</option>
+                            <option value="any">🌐 Qualquer</option>
+                        </select>
+                        <input id="monWatchFilter" placeholder="Filtro (ex: Alana, desbloqueio)" style="flex:1;min-width:120px;background:#0a0e1a;color:#e2e8f0;border:1px solid #334155;padding:6px;border-radius:6px;" />
+                        <input id="monWatchInst" placeholder="O que fazer ao disparar" style="flex:2;min-width:160px;background:#0a0e1a;color:#e2e8f0;border:1px solid #334155;padding:6px;border-radius:6px;" />
+                        <button onclick="addMonWatch()" style="background:#0f766e;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;">➕ Agendar</button>
+                    </div>
+                    <div id="monWatchesList" class="scroll-container" style="max-height:360px;">Carregando vigias...</div>
+                </div>
+                <div class="panel">
+                    <h2>🕒 Últimos Disparos de Vigia</h2>
+                    <div id="monWatchEvents" class="scroll-container" style="max-height:360px;">Carregando disparos...</div>
+                </div>
+            </div>
+        </div><!-- /tab-watches -->
+
+        <div id="tab-energy" class="tab-panel">
+            <div class="dashboard">
+                <div class="panel">
+                    <h2>🔋 Bateria & Gerenciamento X0</h2>
+                    <div id="monEnergySummary" style="font-family:monospace;font-size:13px;line-height:1.7;margin-bottom:10px;">Carregando...</div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+                        <button onclick="setMonSensorMode('normal')" style="background:#1d4ed8;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;">⚡ Normal</button>
+                        <button onclick="setMonSensorMode('eco')" style="background:#047857;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;">🌿 Eco</button>
+                        <button onclick="setMonSensorCriticalOnly()" style="background:#7c3aed;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;">🛡️ Só Críticos</button>
+                        <button onclick="loadMonEnergy()" style="background:#334155;color:#fff;border:none;padding:6px 12px;border-radius:6px;cursor:pointer;">🔄 Atualizar</button>
+                    </div>
+                    <div id="monX0SensorsToggleList" style="border-top:1px solid #1e293b;padding-top:8px;">Carregando sensores do X-Zero...</div>
+                </div>
+                <div class="panel">
+                    <h2>🛠️ Uso & Impacto por Ferramenta</h2>
+                    <div id="monEnergyTools" class="scroll-container" style="max-height:300px;">Carregando...</div>
+                </div>
+                <div class="panel" style="grid-column:1 / -1;">
+                    <h2>🧭 Sensores do Hardware (Consumo em mA)</h2>
+                    <div id="monEnergySensors" class="scroll-container" style="max-height:320px;">Carregando...</div>
+                </div>
+            </div>
+        </div><!-- /tab-energy -->
+
+        <div id="tab-estudo" class="tab-panel">
+          <div class="doc">
+
+<h2>🤖 Identidade</h2>
+<p class="lead">Não é mascote. É um agente autônomo que roda no seu celular Android — com corpo, voz, memória e política de decisão próprios.</p>
+<div class="names">
+  <span class="name">ADA</span><span class="name">X</span><span class="name">X0</span>
+  <span class="name">X-Zero</span><span class="name">Xenon</span><span class="name">Reploid</span>
+</div>
+<p><b>ADA</b> = Assistente Digital Autônomo. <b>Xenon</b> é a forma visível (o sprite animado que mostra o estado interno). <b>X / X0 / X-Zero</b> são os nomes de chamada por voz (wake word). <b>Reploid</b> é a linhagem do projeto (pacote <code>com.xzero.agent</code>).</p>
+
+<h2>🏗️ Arquitetura em camadas</h2>
+<p>46 módulos Kotlin, ~19,5 mil linhas (incluindo FSM unificada <code>AdaStateMachine</code> e orquestrador <code>IdeaToActionGraph</code>). A ordem abaixo é a ordem em que um estímulo atravessa o sistema.</p>
+<table>
+<tr><th>Camada</th><th>Módulos</th><th>Responsabilidade</th><th>Por que existe</th></tr>
+<tr><td><b>1. Captação</b></td><td>VoiceActivityDetector (297)<br>VoicePrint (259)</td><td>AudioRecord contínuo a 16 kHz, decide quando há fala</td><td class="why">Sem ele, o SpeechRecognizer ficava em loop no silêncio — bipes e ícone de mic piscando</td></tr>
+<tr><td><b>2. Transcrição</b></td><td>BubbleService (1971)</td><td>SpeechRecognizer, anti-eco, consolidação de pausas, barge-in</td><td class="why">A fala humana tem pausas; cortar no primeiro silêncio destrói o pedido</td></tr>
+<tr><td><b>3. Intenção</b></td><td>AmbientContextEngine (929)<br>SemanticMatcher (343)<br>VoiceSemantics (124)</td><td>Decide: é comando para a ADA ou conversa da sala?</td><td class="why">Modo Live escuta tudo; precisa de um juiz para não agir em conversa alheia</td></tr>
+<tr><td><b>4. Decisão</b></td><td>Agent (1997)<br>Llm (161)<br>RuleEngine (418)</td><td>Loop de até 25 passos: pensa → age → verifica</td><td class="why">Tarefa real exige vários passos com releitura de tela entre eles</td></tr>
+<tr><td><b>5. Ação</b></td><td>AgentAccessibilityService (248)<br>McpClientManager (348)</td><td>Toca na tela / chama ferramentas externas</td><td class="why">Dois braços: UI (acessibilidade) e API (MCP), porque nem tudo precisa de tela</td></tr>
+<tr><td><b>6. Aprendizado</b></td><td>KnowledgeGraphMemory (808)<br>TrajectoryLogger (169)</td><td>Grafo de fatos, política Q(s,a), rotas campeãs</td><td class="why">Repetir o mesmo erro é o pior defeito de um agente</td></tr>
+<tr><td><b>7. Estado</b></td><td>EmotionEngine (143)<br>XenonSpriteView (391)</td><td>Emoção → sprite + prosódia + correção de rota</td><td class="why">O estado interno vira sinal visível E pressão de mudança de estratégia</td></tr>
+<tr><td><b>8. Observação</b></td><td>AudioTelemetry (321)<br>MetricsCollector (320)<br>ErrorDetector (268)<br>ThinkingLogger (166)<br>RealtimeMonitoringAPI (298)</td><td>Mede tudo e serve em HTTP/SSE</td><td class="why">O que não é medido não melhora — esta aba existe por isso</td></tr>
+<tr><td><b>9. Saúde</b></td><td>HealthMonitor (391)<br>AccessibilityServiceObserver (65)<br>VadAutoTuner (164)<br>UnlockGate (156)</td><td>Auto-cura, calibração e portão de desbloqueio</td><td class="why">Serviço que roda 24h precisa se recuperar sozinho</td></tr>
+</table>
+
+<h2>🎙️ Fluxo 1 — da sua voz até a decisão</h2>
+<svg viewBox="0 0 980 240" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Fluxo de voz">
+  <defs><marker id="a" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#38BDF8"/></marker></defs>
+  <g font-family="monospace" font-size="11.5" text-anchor="middle">
+    <rect x="8" y="60" width="120" height="54" rx="9" fill="#0F172A" stroke="#00F5D4"/>
+    <text x="68" y="82" fill="#00F5D4">🎤 AudioRecord</text><text x="68" y="99" fill="#64748B">16 kHz · 40 ms</text>
+    <rect x="156" y="60" width="130" height="54" rx="9" fill="#0F172A" stroke="#38BDF8"/>
+    <text x="221" y="82" fill="#38BDF8">VAD (dBFS)</text><text x="221" y="99" fill="#64748B">SNR ≥ 9 dB</text>
+    <rect x="314" y="60" width="130" height="54" rx="9" fill="#0F172A" stroke="#8B5CF6"/>
+    <text x="379" y="82" fill="#8B5CF6">VoicePrint</text><text x="379" y="99" fill="#64748B">é o usuário?</text>
+    <rect x="472" y="60" width="140" height="54" rx="9" fill="#0F172A" stroke="#FBBF24"/>
+    <text x="542" y="82" fill="#FBBF24">SpeechRecognizer</text><text x="542" y="99" fill="#64748B">pt-BR + parciais</text>
+    <rect x="640" y="60" width="150" height="54" rx="9" fill="#0F172A" stroke="#F97316"/>
+    <text x="715" y="82" fill="#F97316">AmbientContext</text><text x="715" y="99" fill="#64748B">score ≥ 4,8?</text>
+    <rect x="818" y="60" width="150" height="54" rx="9" fill="#0F172A" stroke="#22C55E"/>
+    <text x="893" y="82" fill="#22C55E">Agent.run()</text><text x="893" y="99" fill="#64748B">loop de 25 passos</text>
+    <g stroke="#38BDF8" stroke-width="1.6" marker-end="url(#a)">
+      <line x1="128" y1="87" x2="152" y2="87"/><line x1="286" y1="87" x2="310" y2="87"/>
+      <line x1="444" y1="87" x2="468" y2="87"/><line x1="612" y1="87" x2="636" y2="87"/>
+      <line x1="790" y1="87" x2="814" y2="87"/>
+    </g>
+    <text x="221" y="140" fill="#64748B" font-size="10">piso adaptativo</text>
+    <text x="221" y="154" fill="#64748B" font-size="10">sobe devagar/desce rápido</text>
+    <text x="379" y="140" fill="#64748B" font-size="10">log-mel 24 bandas</text>
+    <text x="379" y="154" fill="#64748B" font-size="10">perfil auto-matriculado</text>
+    <text x="715" y="140" fill="#64748B" font-size="10">wake word · score</text>
+    <text x="715" y="154" fill="#64748B" font-size="10">semântica · tela</text>
+    <rect x="156" y="178" width="634" height="38" rx="8" fill="#0F172A" stroke="#1E293B"/>
+    <text x="473" y="202" fill="#94A3B8" font-size="11">VadAutoTuner: disparo que virou ação → limiar −0,6 dB · disparo à toa → limiar +0,9 dB (aprende sozinho)</text>
+  </g>
+</svg>
+
+<h3>Por que cada etapa existe</h3>
+<ul>
+<li><b>VAD próprio em vez do SpeechRecognizer direto:</b> no Android 14 abrir/fechar o reconhecedor em silêncio gera bipe e pisca o ícone do microfone. O VAD escuta barato e só acorda o reconhecedor quando há fala de verdade.</li>
+<li><b>dBFS em vez de RMS linear:</b> o limiar antigo (<code>piso × 2,55</code>) variava 3× conforme o ruído. Em dBFS a exigência é sempre a mesma: <b>9 dB acima do ruído da sala</b>.</li>
+<li><b>VoicePrint:</b> separa a sua voz da TV. Hoje só observa e alimenta a pontuação; vira bloqueio quando o perfil amadurece (≥12 amostras).</li>
+<li><b>Consolidação de pausas:</b> você fala em fluxo ("abre o… deixa eu pensar… abre o YouTube"). O sistema espera 2,3 s (ou 3,8 s se a frase ficou aberta) e junta tudo num pedido só.</li>
+</ul>
+
+<h2>🔄 Fluxo 2 — o loop de decisão</h2>
+<svg viewBox="0 0 980 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Loop do agente">
+  <defs><marker id="b" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#8B5CF6"/></marker>
+  <marker id="r" markerWidth="9" markerHeight="9" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#F97316"/></marker></defs>
+  <g font-family="monospace" font-size="11.5" text-anchor="middle">
+    <rect x="20" y="20" width="150" height="48" rx="9" fill="#0F172A" stroke="#38BDF8"/>
+    <text x="95" y="40" fill="#38BDF8">1. Lê a tela</text><text x="95" y="56" fill="#64748B">AX tree + diff</text>
+    <rect x="200" y="20" width="160" height="48" rx="9" fill="#0F172A" stroke="#8B5CF6"/>
+    <text x="280" y="40" fill="#8B5CF6">2. Monta o prompt</text><text x="280" y="56" fill="#64748B">+ grafo + emoção</text>
+    <rect x="390" y="20" width="150" height="48" rx="9" fill="#0F172A" stroke="#FBBF24"/>
+    <text x="465" y="40" fill="#FBBF24">3. LLM → JSON</text><text x="465" y="56" fill="#64748B">retry 1x + reparo</text>
+    <rect x="570" y="20" width="150" height="48" rx="9" fill="#0F172A" stroke="#FF9100"/>
+    <text x="645" y="40" fill="#FF9100">4. RuleEngine</text><text x="645" y="56" fill="#64748B">bloqueia/confirma</text>
+    <rect x="750" y="20" width="160" height="48" rx="9" fill="#0F172A" stroke="#F72585"/>
+    <text x="830" y="40" fill="#F72585">5. Confirmação</text><text x="830" y="56" fill="#64748B">voz: "pode fazer?"</text>
+    <rect x="750" y="110" width="160" height="48" rx="9" fill="#0F172A" stroke="#22C55E"/>
+    <text x="830" y="130" fill="#22C55E">6. Executa</text><text x="830" y="146" fill="#64748B">tap / MCP / intent</text>
+    <rect x="540" y="110" width="170" height="48" rx="9" fill="#0F172A" stroke="#38BDF8"/>
+    <text x="625" y="130" fill="#38BDF8">7. Verifica efeito</text><text x="625" y="146" fill="#64748B">tela mudou?</text>
+    <rect x="320" y="110" width="170" height="48" rx="9" fill="#0F172A" stroke="#EF4444"/>
+    <text x="405" y="130" fill="#EF4444">8. ErrorDetector</text><text x="405" y="146" fill="#64748B">tipo + gravidade</text>
+    <rect x="100" y="110" width="170" height="48" rx="9" fill="#0F172A" stroke="#F97316"/>
+    <text x="185" y="130" fill="#F97316">9. Penaliza grafo</text><text x="185" y="146" fill="#64748B">Q(s,a) + rota</text>
+    <rect x="240" y="210" width="480" height="52" rx="9" fill="#0F172A" stroke="#00ff88"/>
+    <text x="480" y="232" fill="#00ff88">10. Rota alternativa injetada no próximo prompt</text>
+    <text x="480" y="249" fill="#64748B">"evite mcp_call · use device_status (Q=+2,24)" — ANTES da estagnação</text>
+    <g stroke="#8B5CF6" stroke-width="1.6" marker-end="url(#b)">
+      <line x1="170" y1="44" x2="196" y2="44"/><line x1="360" y1="44" x2="386" y2="44"/>
+      <line x1="540" y1="44" x2="566" y2="44"/><line x1="720" y1="44" x2="746" y2="44"/>
+      <line x1="830" y1="68" x2="830" y2="106"/><line x1="746" y1="134" x2="716" y2="134"/>
+    </g>
+    <g stroke="#F97316" stroke-width="1.6" marker-end="url(#r)">
+      <line x1="536" y1="134" x2="496" y2="134"/><line x1="316" y1="134" x2="276" y2="134"/>
+      <line x1="185" y1="158" x2="185" y2="200" /><line x1="185" y1="236" x2="236" y2="236"/>
+      <line x1="480" y1="206" x2="480" y2="80" stroke-dasharray="5,4"/>
+    </g>
+  </g>
+</svg>
+<div class="callout"><b>O detalhe que faz diferença:</b> a correção de rota entra <b>no 1º erro</b>, não depois de 2 passos travados. Antes o agente só pedia ajuda quando já estava preso.</div>
+
+<h2>🕸️ Os grafos — como a ADA aprende</h2>
+<p>São três estruturas distintas em <code>KnowledgeGraphMemory.kt</code>, persistidas em <code>files/knowledge_graph_v2.json</code>.</p>
+<table>
+<tr><th>Estrutura</th><th>Formato</th><th>Para que serve</th><th>Quando muda</th></tr>
+<tr><td><b>Edges</b> (fatos)</td><td><code>(sujeito) -[relação]→ (alvo)</code> + peso</td><td>Memória declarativa: "Xenon é a forma visível da ADA"</td><td><code>upsertFact()</code> — e agora também a cada erro: <code>(app:ação) -[falhou_como_TIPO]→ cluster</code></td></tr>
+<tr><td><b>Q(s,a)</b> (política)</td><td><code>stateKey = cluster|app</code> → ação → valor</td><td>Qual ação funciona neste contexto. É aprendizado por reforço clássico (α = 0,35)</td><td><code>scoreStep()</code> a cada passo: +1,8 done · +1,2 tela mudou · −1,0 erro · −0,8 estagnado</td></tr>
+<tr><td><b>Golden Routes</b></td><td>intenção + app + sequência de passos + score</td><td>Receita que já deu certo, injetada no prompt para não redescobrir o caminho</td><td><code>recordRouteOutcome()</code> no fim da sessão + rebaixamento imediato por erro grave</td></tr>
+</table>
+<h3>Os 10 clusters de intenção</h3>
+<p><span class="tag">general_ui</span><span class="tag">whatsapp_msg</span><span class="tag">device_telemetry</span><span class="tag">audio_record</span><span class="tag">media_control</span><span class="tag">web_research</span><span class="tag">camera_vision</span><span class="tag">silent_notif</span><span class="tag">conversational_qa</span><span class="tag">watch_alert</span></p>
+<p class="lead">O cluster é a "sala" onde a ação é avaliada: a mesma ação pode ser ótima num cluster e péssima noutro. Por isso <code>stateKey</code> combina cluster + pacote do app.</p>
+
+<h3>O segundo cérebro: cascata semântica</h3>
+<p>Separado do grafo, <code>SemanticMatcher</code> decide o significado de frases curtas em 3 níveis, do mais barato ao mais caro:</p>
+<table>
+<tr><th>Nível</th><th>Técnica</th><th>Custo</th><th>Pega o quê</th></tr>
+<tr><td>1. exato</td><td>texto normalizado (sem acento/pontuação)</td><td>~0,01 ms</td><td>"sim", "pode fazer", "tá bom"</td></tr>
+<tr><td>2. lexical</td><td>cosseno de palavras + trigramas</td><td>~0,05 ms</td><td>"confirma/confirmo", erro de ASR</td></tr>
+<tr><td>3. semântico</td><td>embedding Gemini em <b>cache local</b></td><td>~0,3 ms</td><td>"demorô", "fecha", "bote pra funcionar"</td></tr>
+</table>
+<div class="callout"><b>Por que o embedding não deixa lento:</b> a API só é chamada <b>uma vez por frase nova</b>, em background, fora do caminho crítico. O vetor fica em disco e dali em diante a comparação é local. Frase nova cai no caminho antigo; da segunda vez já é instantânea.</div>
+
+<h2>😤 Emoção como correção de rota</h2>
+<p>O <code>EmotionEngine</code> tem 10 estados. Cada um tem <b>três saídas</b>: animação do Xenon, prosódia do TTS (pitch/velocidade) e — a parte que muda comportamento — uma <b>dica injetada no prompt</b>.</p>
+<table>
+<tr><th>Emoção</th><th>Xenon</th><th>Dispara quando</th><th>Efeito no raciocínio</th></tr>
+<tr><td>😌 CALMO</td><td>IDLE</td><td>repouso</td><td>—</td></tr>
+<tr><td>👂 ATENTO</td><td>ATTENDING</td><td>escutando você</td><td>—</td></tr>
+<tr><td>🎯 FOCADO</td><td>THINK</td><td>pensando/agindo</td><td>—</td></tr>
+<tr><td>🎉 SATISFEITO</td><td>SUCCESS_HAPPY</td><td>tarefa concluída</td><td>2 acertos seguidos → "mantenha a estratégia"</td></tr>
+<tr><td>🤔 INCERTO</td><td>CONFUSED</td><td>1º passo sem progresso</td><td>"reavalie a tela antes de repetir"</td></tr>
+<tr><td>😤 FRUSTRADO</td><td>ALERT_RECOIL</td><td>ciclo A→B→A detectado</td><td>"tente caminho CLARAMENTE diferente"</td></tr>
+<tr><td>😟 PREOCUPADO</td><td>ERROR_SAD</td><td>ação falhou / LLM caiu</td><td>3 tropeços → "ABANDONE a abordagem AGORA"</td></tr>
+<tr><td>🛡️ CAUTELOSO</td><td>EXPLAIN</td><td>pedindo confirmação</td><td>—</td></tr>
+<tr><td>⌛ AGUARDANDO</td><td>WAITING_IMPATIENT</td><td>sua resposta não vem</td><td>—</td></tr>
+<tr><td>🥱 OCIOSO</td><td>BORED_TAPPING</td><td>muito tempo parado</td><td>—</td></tr>
+</table>
+
+<h2>🔗 Mapa de chamadas — quem chama quem e por quê</h2>
+<p class="lead">Extraído do código real. Os números são a quantidade de referências.</p>
+<table>
+<tr><th>Módulo</th><th>Chama</th><th>Por quê</th></tr>
+<tr><td><b>Agent</b> (1997)</td><td>ProactiveWatcher(16) · EmotionEngine(14) · AgentAccessibilityService(13) · HealthMonitor(11) · AudioTelemetry(7) · VoiceSemantics(6)</td><td>É o orquestrador: sente (emoção), age (acessibilidade), vigia (watcher) e se cura (health)</td></tr>
+<tr><td><b>BubbleService</b> (1971)</td><td>XenonSpriteView(30) · EmotionEngine(19) · Prefs(17) · AudioTelemetry(11) · AmbientContextEngine(10)</td><td>É o corpo: desenha o Xenon, fala, escuta e roteia a voz para o Agent</td></tr>
+<tr><td><b>VoiceActivityDetector</b></td><td>AudioTelemetry(15) · VoicePrint(3) · VadAutoTuner(1)</td><td>Tudo que ele mede vira telemetria; o tuner ajusta o limiar dele de volta</td></tr>
+<tr><td><b>AudioTelemetry</b></td><td>VadAutoTuner(8) · VoiceSemantics · EmotionEngine · VoicePrint · UnlockGate</td><td>Ponto único de leitura do estado de voz — o <code>/api/agent/audio</code> sai daqui</td></tr>
+<tr><td><b>ErrorDetector</b></td><td>MetricsCollector · ThinkingLogger</td><td>Classifica o erro e empurra para as métricas e para o SSE do dashboard</td></tr>
+<tr><td><b>UnlockGate</b></td><td>SemanticMatcher(6)</td><td>Reaproveita o cosseno de trigramas para aceitar "powerfly" mesmo com ASR impreciso</td></tr>
+<tr><td><b>EmotionEngine</b></td><td>XenonSpriteView(11)</td><td>Única ponte entre estado interno e corpo visível</td></tr>
+</table>
+<h3>Os módulos mais centrais (mais chamados)</h3>
+<p><span class="tag">BubbleService · 86</span><span class="tag">XenonSpriteView · 53</span><span class="tag">ProactiveWatcher · 46</span><span class="tag">Prefs · 40</span><span class="tag">AudioTelemetry · 38</span><span class="tag">EmotionEngine · 35</span><span class="tag">HealthMonitor · 25</span></p>
+<div class="callout warn"><b>Leia como dívida técnica:</b> <code>BubbleService</code> com 1971 linhas e 86 referências é o maior ponto de acoplamento do sistema. É o primeiro candidato a ser quebrado em partes (voz / overlay / orquestração).</div>
+
+<h2>📡 Monitoramento — o que cada endpoint entrega</h2>
+<table>
+<tr><th>Endpoint</th><th>Conteúdo</th></tr>
+<tr><td><code>/api/agent/audio</code></td><td>nível dBFS, piso de ruído, limiar, SNR, autotune (score/offset), voiceprint, semântica, emoção, portão de desbloqueio</td></tr>
+<tr><td><code>/api/agent/errors</code></td><td>histórico tipado com gravidade 1-5 e sugestão</td></tr>
+<tr><td><code>/api/agent/thinking</code></td><td>raciocínio passo a passo com confiança</td></tr>
+<tr><td><code>/api/agent/metrics</code> · <code>/timeline</code> · <code>/analysis</code> · <code>/summary</code></td><td>KPIs da sessão, linha do tempo e análise</td></tr>
+<tr><td><code>/api/agent/stream</code></td><td>SSE ao vivo (<code>thinking_step</code>, <code>error_detected</code>, <code>action_recorded</code>, <code>session_end</code>)</td></tr>
+</table>
+<p>Terminal: <code>./tools/monitor_audio.sh</code> (painel ao vivo) · <code>log</code> · <code>json</code>. Controle por adb: ações <code>AUDIO</code> (calibração/gate) e <code>VOICE</code> (listar/fixar/testar voz).</p>
+
+<h2>🎯 Onde mexer para melhorar</h2>
+<p class="lead">Pontos de alavanca em ordem de retorno, com o arquivo de cada um.</p>
+<table>
+<tr><th>#</th><th>Alavanca</th><th>Onde</th><th>Por que rende</th></tr>
+<tr><td>1</td><td>Quebrar o BubbleService</td><td><code>BubbleService.kt</code></td><td>1971 linhas acumulando voz + overlay + orquestração; qualquer mudança arrisca tudo</td></tr>
+<tr><td>2</td><td>Ligar o VoicePrint como bloqueio</td><td><code>VoicePrint.kt</code> + pref <code>voicePrintGate</code></td><td>Mata os disparos da TV/terceiros — a maior fonte de acionamento à toa</td></tr>
+<tr><td>3</td><td>Mais atalhos locais sem LLM</td><td><code>Agent.instantLocalAnswer()</code></td><td>Presença e bateria já respondem em 0 ms; hora, wi-fi e notificações podem seguir</td></tr>
+<tr><td>4</td><td>Afinar o <code>categorizeError</code></td><td><code>ErrorDetector.kt</code></td><td>Hoje falha de rede vira UNKNOWN_STATE com sugestão de UI ("use back") — conselho errado</td></tr>
+<tr><td>5</td><td>Smart Lock em vez de desbloqueio por software</td><td>Android, não o app</td><td>Com PIN nenhum app destrava o keyguard; local/dispositivo confiável resolve de verdade</td></tr>
+<tr><td>6</td><td>Embedding on-device</td><td><code>SemanticMatcher</code> nível 3,5</td><td>Só vale se a taxa de "desconhecidos" continuar alta — a telemetria é que decide</td></tr>
+</table>
+
+<h2>🧪 Como estudar na prática</h2>
+<ul>
+<li><b>Ver a ADA pensando:</b> aba Monitor + <code>adb logcat -s AgentePhone:I</code> lado a lado.</li>
+<li><b>Ver a voz por dentro:</b> <code>./tools/monitor_audio.sh</code> enquanto você fala — piso, limiar e SNR ao vivo.</li>
+<li><b>Ver o aprendizado:</b> <code>adb exec-out "run-as com.xzero.agent cat files/knowledge_graph_v2.json"</code> — campos abreviados: <code>i</code>=intenção, <code>s</code>=passos, <code>sc</code>=score, <code>sk</code>=estado, <code>a</code>=ação, <code>q</code>=valor Q.</li>
+<li><b>Ver o histórico real:</b> <code>files/trajectories/*.jsonl</code> — uma sessão por arquivo, com <code>session_start</code>, cada <code>agent_step</code> e o <code>session_end</code>.</li>
+<li><b>Forçar um erro para estudar a cascata:</b> peça algo com <code>confirmado,</code> na frente e um alvo inexistente — dá para ver a penalização e a rota alternativa no log.</li>
+</ul>
+
+<h2>🚀 Módulos Avançados &amp; Infraestrutura Completa</h2>
+<p>Além do loop básico, o sistema reúne camadas de voz offline, visão em segundo plano, gravação de demonstração, MCPs remotos via Cloudflare e banco de memória em grafo:</p>
+<table>
+  <tr><th>Módulo / Arquivo</th><th>Responsabilidade Técnica</th><th>Como estudar / verificar</th></tr>
+  <tr><td><b>Voz &amp; KWS Offline</b><br><code>VoiceActivityDetector.kt</code><br><code>OfflineWakeWordSpotter.kt</code><br><code>AmbientContextEngine.kt</code></td><td>VAD normalizado em dBFS + SNR (não dispara com ruído constante). Só alimenta o Sherpa-ONNX Zipformer (<code>assets/kws/keywords.txt</code>) quando há energia vocal, reconhecendo <b>X-Zero, X0, Xenon, Zenon, Ada</b>. Também compartilha frames PCM 16 kHz via <code>onPcmFrameListener</code> sem disputar o microfone.</td><td>Aba Monitor → card <i>Voz &amp; VAD</i> em tempo real (SNR, piso, falsos disparos).</td></tr>
+  <tr><td><b>Narração Natural por Etapa</b><br><code>Agent.kt</code></td><td>Em tarefas multi-etapa, o próprio LLM preenche o campo <code>"fala"</code> no JSON de cada passo com o verbo no gerúndio + onde + pra quê (ex.: <i>"Abrindo o iFood pra procurar o lanche"</i>), com cadência mínima de 2,2s para não cortar o TTS. Retry de JSON inválido usa <code>formato_invalido:</code> para não confundir o <code>GoalVerifier</code>.</td><td>Abra qualquer sessão recente no <b>Monitor Histórico</b> acima e leia <code>plan</code>, <code>thought</code> e <code>action</code>.</td></tr>
+  <tr><td><b>Câmera &amp; Vigia de Desbloqueio</b><br><code>CameraVision.kt</code><br><code>ProactiveWatcher.kt</code></td><td><code>capture_camera</code> usa <code>Camera2</code> em segundo plano com <code>FOREGROUND_SERVICE_CAMERA</code> e fecha câmera/<code>ImageReader</code> no <code>finally</code>. O <code>BubbleService</code> escuta <code>ACTION_USER_PRESENT</code> para disparar vigias de desbloqueio (<code>source="unlock"</code>), removendo vigias pontuais após o 1º disparo.</td><td>Aba <b>👁️ Vigias &amp; Agenda</b> + <code>capture_camera</code> via MCP/voz.</td></tr>
+  <tr><td><b>Modo Demo / X-Zero Studio</b><br><code>DemoRecorderService.kt</code><br><code>DemoProjectionActivity.kt</code></td><td>Grava <code>.mp4</code> (H.264 + AAC) direto em <code>Movies/XZeroDemo/</code> usando <code>MediaProjection</code> (tela inteira) + janela PiP de câmera arrastável com botão <b>📷 Traseira / 🤳 Frontal</b> + áudio duplo (sua voz via hook PCM do VAD + voz do X-Zero via <code>AudioPlaybackCapture</code>).</td><td>Botão <b>🎬 Gravar Demo</b> na tela principal do app.</td></tr>
+  <tr><td><b>MCPs, Cloudflare &amp; ChatGPT Web</b><br><code>xzero_mcp_server.js</code><br><code>remote_auth_server.js</code></td><td>O domínio <code>xzero-mcp.example.com</code> roteia por caminho: <code>/mcp/host-cloud</code>, <code>/mcp/whatsapp</code> e <code>/mcp/host-brain</code> vão para a porta <code>3029</code> (Bearer Token para o celular em 4G/5G); <code>/mcp</code> + OAuth 2.0/PKCE vão para a porta <code>3033</code> (ChatGPT Web).</td><td><code>curl https://xzero-mcp.example.com/.well-known/oauth-authorization-server</code></td></tr>
+  <tr><td><b>Second Brain Multi-Hop</b><br><code>second-brain/app/api/memory.py</code></td><td>Expõe <code>POST /api/memory/remember</code> (upsert de entidades e relações) e <code>GET /api/memory/graph-search?hops=2</code> (travessia BFS em 2 saltos), consumidos pelo X-Zero via <code>second_brain_remember</code> e <code>second_brain_search</code>.</td><td>Peça ao X-Zero: <i>"Salva no Second Brain que X está ligado a Y"</i>.</td></tr>
+  <tr><td><b>Energia &amp; Observabilidade</b><br><code>dashboard/server.js</code> (:3028)<br><code>RealtimeMonitoringAPI.kt</code> (:3030)</td><td><code>:3028</code> lê <code>dumpsys batterystats</code> (por subsistema, UID→pacote e ferramenta), usa cache/coalescência de ADB (<code>/api/_selfstat</code>) e traz os dados de <code>:3030</code> para o painel web. <code>:3030</code> expõe <code>Sensor.getPower()</code> em mA e troca de modo <code>normal</code>/<code>eco</code>.</td><td>Abas <b>🔋 Energia &amp; Sensores</b> e <b>🧠 Monitor :3030</b>.</td></tr>
+  <tr><td><b>Testbed JVM Offline</b><br><code>testbed/run.sh</code></td><td>Compila todo o <code>app/src/main/java</code> na JVM contra <code>android.jar</code> + Robolectric, intercepta HTTPS com <code>FakeLlm</code> e executa 56+ testes + 3 cenários de aparelho falso em segundos antes de gerar APK.</td><td>Rode <code>./testbed/run.sh</code> no terminal do projeto.</td></tr>
+</table>
+
+<h2>🧭 Engenharia de Harness Cognitivo (Fundamentos da Refatoração)</h2>
+<p class="lead">Quatro pilares arquiteturais que explicam como transformar um assistente reativo em um agente natural, previsível e com sensação real de presença:</p>
+<table>
+  <tr><th>Pilar</th><th>Módulo no XZero</th><th>Conceito-Chave</th><th>Por que eleva a naturalidade</th></tr>
+  <tr><td><b>1. FSM Unificada (Statecharts)</b></td><td><code>AdaStateMachine.kt</code></td><td>Um único <code>StateFlow&lt;AdaState&gt;</code> substitui dezenas de flags booleanas (<i>DORMANT → STANDBY_VAD → LISTENING_USER → UNDERSTANDING → PLANNING_GRAPH → EXECUTING_STEP → SPEAKING_REPLY → FOLLOWUP_WINDOW</i>).</td><td>Garante invariantes sem race conditions: ex. borda luminosa acende <b>somente</b> em <code>LISTENING_USER</code>, e o Xenon nunca contradiz o estado real do microfone.</td></tr>
+  <tr><td><b>2. Grafo Ideia → Ação</b></td><td><code>IdeaToActionGraph.kt</code><br><code>KnowledgeGraphMemory.kt</code></td><td>Separa classificação de intenção (<code>CONVERSATIONAL</code> / <code>ACTION_SIMPLE</code> / <code>IDEA_COMPLEX</code>), portão de risco (<code>Tier 0/1/2</code>), sanitização de <code>batch</code> e recuperação por rota alternativa.</td><td>Uma ideia aberta vira sub-etapas limpas em vez de um loop cego de 25 cliques; ações seguras executam na hora e ações sensíveis pedem confirmação curta.</td></tr>
+  <tr><td><b>3. Turn-Taking &amp; Barge-In</b></td><td><code>VoiceActivityDetector.kt</code><br><code>BubbleService.kt</code></td><td>Endpointing semântico (espera mais se a frase terminou em conectivo aberto), proteção de handoff <code>VAD → ASR</code> e interrupção imediata do TTS quando você fala.</td><td>Conversa humana tem sobreposição e pausas; parar de falar assim que você entra na conversa é o que cria a sensação de estar falando com alguém presente.</td></tr>
+  <tr><td><b>4. Memória em Camadas (CoALA)</b></td><td><code>TrajectoryLogger.kt</code><br><code>KnowledgeGraphMemory.kt</code><br><code>InitiativeEngine.kt</code></td><td>Quatro memórias distintas: <b>Trabalho</b> (sessão atual), <b>Episódica</b> (<code>trajectories/*.jsonl</code>), <b>Semântica</b> (fatos + embeddings) e <b>Procedural</b> (<code>GoldenRoutes</code> + <code>Q(s,a)</code>).</td><td>Permite consolidar erros no tempo ocioso, escrever o diário sem violar privacidade e sugerir ações úteis sem agir sem permissão.</td></tr>
+</table>
+
+<h2>📖 Sugestões de Leitura para Aprofundar no Tema</h2>
+<p class="lead">Curadoria de papers e livros que fundamentam diretamente cada camada do ADA / XZero:</p>
+<table>
+  <tr><th>Tema</th><th>Obra / Paper</th><th>O que você vai aprender e aplicar aqui</th></tr>
+  <tr><td><b>Arquitetura Cognitiva</b></td><td><b>CoALA: Cognitive Architectures for Language Agents</b> (Sumers et al., Princeton, 2023/2024)</td><td>Mapa completo das 4 memórias (trabalho, episódica, semântica, procedural) e do ciclo de decisão — espelho direto da arquitetura do ADA.</td></tr>
+  <tr><td><b>Raciocínio &amp; Ação</b></td><td><b>ReAct</b> (Yao et al., 2022) &amp; <b>Reflexion</b> (Shinn et al., 2023)</td><td>Como combinar pensamento + ação (ReAct) e usar aprendizado por reforço verbal após erros sem retreinar pesos (base do <code>ErrorDetector</code> + <code>InitiativeEngine</code>).</td></tr>
+  <tr><td><b>Habilidades Verificadas</b></td><td><b>Voyager</b> (Wang et al., 2023) &amp; <b>AppAgent / Mobile-Agent</b> (2023–2024)</td><td>Biblioteca de rotas verificadas (análoga às <code>GoldenRoutes</code>) e controle de smartphones Android combinando árvore de acessibilidade + visão.</td></tr>
+  <tr><td><b>Engenharia de Harness</b></td><td><b>Building Effective Agents</b> (Anthropic Engineering, 2024)</td><td>Guia prático sobre quando usar grafos/workflows determinísticos vs. loops autônomos e como manter o harness enxuto e confiável.</td></tr>
+  <tr><td><b>Máquinas de Estado</b></td><td><b>Statecharts: A Visual Formalism for Complex Systems</b> (David Harel, 1987)</td><td>Clássico curto que ensina a eliminar bugs de flags booleanas em sistemas reativos com estados hierárquicos e ortogonais.</td></tr>
+  <tr><td><b>Aprendizado Q(s,a)</b></td><td><b>Reinforcement Learning: An Introduction</b> (Sutton &amp; Barto — Caps. 1, 2 e 6)</td><td>Fundamentação matemática de Bandits e Temporal-Difference / Q-Learning usada diretamente na tabela <code>Q(s,a)</code> do <code>KnowledgeGraphMemory.kt</code>.</td></tr>
+  <tr><td><b>UX de Voz Natural</b></td><td><b>Designing Voice User Interfaces</b> (Cathy Pearl, O'Reilly)</td><td>Boas práticas de naturalidade em voz, turn-taking, confirmações curtas sem parecer URA e recuperação graciosa de falhas de ASR.</td></tr>
+  <tr><td><b>Memória de Longo Prazo</b></td><td><b>MemGPT / Letta: Towards LLMs as Operating Systems</b> (Packer et al., 2023)</td><td>Como gerenciar contexto curto vs. memória paginada em disco — útil para evoluir o <code>Second Brain</code> e o diário do ADA.</td></tr>
+</table>
+
+          </div>
+        </div><!-- /tab-estudo -->
+
+        <div class="footer">
+            🤖 XZERO Real-Time Monitoring System | Conectado ao Agent
+        </div>
+    </div>
+
+    <script>
+        // Quando a página é servida pelo PRÓPRIO celular (http://localhost:3030/), usa a
+        // mesma origem: SSE e fetch funcionam sem CORS e sem depender do computador ligado.
+        // Quando aberta por file:// no Linux, cai no túnel adb (porta 3031 por padrão).
+        const servedByDevice = window.location.protocol.startsWith('http');
+        const apiBase = servedByDevice
+            ? window.location.origin
+            : `http://localhost:${new URLSearchParams(window.location.search).get('port') || '3031'}`;
+        let eventSource = null;
+        let lastUpdateTime = Date.now();
+        let reconnectAttempts = 0;
+
+        function connect() {
+            try {
+                if (eventSource) eventSource.close();
+                eventSource = new EventSource(`${apiBase}/api/agent/stream`);
+
+                eventSource.onopen = () => {
+                    console.log('✅ Conectado ao stream SSE');
+                    document.getElementById('statusText').textContent = 'Conectado';
+                    document.getElementById('statusIndicator').className = 'status-indicator connected';
+                    reconnectAttempts = 0;
+                };
+
+                eventSource.onmessage = (event) => {
+                    const now = Date.now();
+                    const latency = now - lastUpdateTime;
+                    document.getElementById('latency').textContent = `↔ ${latency}ms`;
+                    lastUpdateTime = now;
+
+                    try {
+                        const data = JSON.parse(event.data);
+                        handleUpdate(data);
+                    } catch (e) {
+                        console.error('Erro ao parsear JSON:', e);
+                    }
+                };
+
+                eventSource.onerror = () => {
+                    document.getElementById('statusText').textContent = 'Reconectando...';
+                    document.getElementById('statusIndicator').className = 'status-indicator disconnected';
+                };
+            } catch (e) {
+                console.error('Erro ao conectar:', e);
+            }
+        }
+
+        function handleUpdate(data) {
+            if (data.event === 'thinking_step') {
+                addThinkingStep(data.data);
+            } else if (data.event === 'error_detected' || data.event === 'error_recorded') {
+                addErrorBox(data.data);
+            } else if (data.event === 'action_recorded') {
+                updateMetrics(data.data);
+                addTimelineItem(data.data);
+            } else if (data.event === 'session_end') {
+                updateAnalysis(data.data);
+            }
+        }
+
+        function addThinkingStep(step) {
+            const panel = document.getElementById('thinkingPanel');
+            if (panel.children.length === 1 && panel.children[0].textContent.includes('Aguardando')) {
+                panel.innerHTML = '';
+            }
+
+            const div = document.createElement('div');
+            div.className = `thinking-step ${step.phase}`;
+            div.innerHTML = `
+                <strong>[${step.step}] ${step.phase.toUpperCase()}</strong><br>
+                ${step.details}<br>
+                ${step.confidence ? `<span style="color: #ffaa00;">Confiança: ${(step.confidence * 100).toFixed(0)}%</span>` : ''}
+            `;
+            panel.insertBefore(div, panel.firstChild);
+
+            // Manter apenas últimos 20
+            while (panel.children.length > 20) {
+                panel.removeChild(panel.lastChild);
+            }
+        }
+
+        function addErrorBox(error) {
+            const panel = document.getElementById('errorsPanel');
+            if (panel.children.length === 1 && panel.children[0].textContent.includes('Nenhum')) {
+                panel.innerHTML = '';
+            }
+
+            const div = document.createElement('div');
+            div.className = 'error-box';
+            div.innerHTML = `
+                <div class="error-type">${error.type} (Severidade: ${error.severity}/5)</div>
+                <div class="error-reason">Step ${error.step}: ${error.reason}</div>
+                <div style="color: #ccc; font-size: 11px; margin: 5px 0;">
+                    Esperado: ${error.expected}<br>
+                    Atual: ${error.actual}
+                </div>
+                ${error.suggestion ? `<div class="suggestion">💡 ${error.suggestion}</div>` : ''}
+            `;
+            panel.insertBefore(div, panel.firstChild);
+
+            // Manter apenas últimos 10
+            while (panel.children.length > 10) {
+                panel.removeChild(panel.lastChild);
+            }
+        }
+
+        function updateMetrics(action) {
+            document.getElementById('totalActions').textContent = action.action_number || '--';
+            document.getElementById('avgTime').textContent = (action.response_time_ms || 0).toFixed(0) + 'ms';
+            document.getElementById('avgConfidence').textContent = ((action.confidence || 0) * 100).toFixed(0) + '%';
+        }
+
+        function addTimelineItem(action) {
+            const panel = document.getElementById('timelinePanel');
+            if (panel.children.length === 1 && panel.children[0].textContent.includes('Aguardando')) {
+                panel.innerHTML = '';
+            }
+
+            const div = document.createElement('div');
+            div.className = 'timeline-item';
+            const marker = document.createElement('div');
+            marker.className = `timeline-marker ${action.success ? '' : 'error'}`;
+            div.appendChild(marker);
+
+            const text = document.createElement('div');
+            text.innerHTML = `
+                <strong>#${action.action_number}</strong> ${action.action}
+                (${action.response_time_ms}ms)
+                ${action.success ? '✅' : '❌'}
+            `;
+            div.appendChild(text);
+
+            panel.insertBefore(div, panel.firstChild);
+
+            // Manter apenas últimos 15
+            while (panel.children.length > 15) {
+                panel.removeChild(panel.lastChild);
+            }
+        }
+
+        function updateAnalysis(analysis) {
+            const metrics = analysis.metrics || {};
+            const successRate = (metrics.success_rate || '--').toString().replace('%', '');
+
+            const qualityScore = analysis.quality_score || 0;
+            const qualityDiv = document.getElementById('qualityScore');
+            qualityDiv.textContent = Math.round(qualityScore) + '/100';
+
+            if (qualityScore >= 80) {
+                qualityDiv.className = 'success-rate';
+            } else if (qualityScore >= 60) {
+                qualityDiv.className = 'success-rate warning';
+            } else {
+                qualityDiv.className = 'success-rate error';
+            }
+
+            const recommendationsDiv = document.getElementById('recommendations');
+            if (analysis.recommendations && analysis.recommendations.length > 0) {
+                recommendationsDiv.innerHTML = analysis.recommendations
+                    .map(r => `<li>${r}</li>`)
+                    .join('');
+            }
+
+            document.getElementById('successRate').textContent = successRate + '%';
+        }
+
+        // Alternância de abas (100% local, não depende do servidor)
+        document.addEventListener('click', (ev) => {
+            const btn = ev.target.closest('.tabbtn');
+            if (!btn) return;
+            document.querySelectorAll('.tabbtn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+            btn.classList.add('active');
+            document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+        });
+
+        // Conectar ao carregar
+        window.addEventListener('load', () => {
+            connect();
+
+            // Fetch de dados via REST também
+            setInterval(() => {
+                fetch(`${apiBase}/api/agent/metrics`)
+                    .then(r => r.json())
+                    .then(data => {
+                        document.getElementById('successRate').textContent = data.success_rate || '--';
+                        document.getElementById('avgTime').textContent = (data.avg_response_time_ms || 0).toFixed(0) + 'ms';
+                    })
+                    .catch(() => {});
+            }, 2000);
+
+            // Monitoramento do pipeline de áudio (acordar + aceitar a ação)
+            const fmt = (v, d = 1) => (v === undefined || v === null) ? '--' : Number(v).toFixed(d);
+            const hhmmss = ts => new Date(ts).toLocaleTimeString('pt-BR');
+            setInterval(() => {
+                fetch(`${apiBase}/api/agent/audio`)
+                    .then(r => r.json())
+                    .then(a => {
+                        const l = a.live, c = a.counters, q = a.quality;
+                        document.getElementById('micState').textContent = a.mic_state;
+                        document.getElementById('audioRms').textContent = fmt(l.rms_dbfs);
+                        document.getElementById('audioRmsBar').style.width =
+                            Math.max(0, Math.min(100, ((l.rms_dbfs + 70) / 70) * 100)) + '%';
+                        document.getElementById('audioRmsBar').style.background =
+                            l.rms_dbfs >= l.threshold_dbfs ? '#ffcc00' : '#00ff88';
+                        document.getElementById('audioFloor').textContent = fmt(l.noise_floor_dbfs);
+                        document.getElementById('audioThreshold').textContent = fmt(l.threshold_dbfs);
+                        document.getElementById('audioSnr').textContent = fmt(l.snr_db);
+                        document.getElementById('audioHeadroom').textContent = fmt(l.headroom_db);
+                        document.getElementById('audioTriggers').textContent = c.vad_triggers;
+                        document.getElementById('audioFalse').textContent = c.vad_triggers_sem_transcricao;
+                        document.getElementById('audioFalseRate').textContent = fmt(q.taxa_falso_disparo);
+                        document.getElementById('audioLatency').textContent = q.latencia_media_final_ms;
+                        document.getElementById('audioSnrAvg').textContent = fmt(q.snr_medio_db);
+                        document.getElementById('audioEcho').textContent = c.descartes_anti_eco;
+                        document.getElementById('audioEchoConfirm').textContent = c.descartes_anti_eco_em_confirmacao;
+                        document.getElementById('audioConfirms').textContent =
+                            `${q.confirmacoes_aceitas}/${q.confirmacoes_total}`;
+                        document.getElementById('audioConfirmRate').textContent = fmt(q.taxa_aceite_confirmacao);
+                        document.getElementById('audioWakeList').innerHTML =
+                            (a.wake_events || []).slice(0, 5).map(w =>
+                                `${hhmmss(w.timestamp)} snr=${fmt(w.snr_db)}dB ${w.latency_final_ms}ms ${w.outcome} ${(w.transcript || '').slice(0, 38)}`
+                            ).join('<br>') || 'aguardando voz…';
+                        document.getElementById('audioConfirmList').innerHTML =
+                            (a.confirm_events || []).slice(0, 4).map(e =>
+                                `${hhmmss(e.timestamp)} [${e.outcome}] ${e.latency_ms}ms tent=${e.attempts} "${(e.reply || '').slice(0, 30)}"`
+                            ).join('<br>') || 'aguardando confirmação…';
+                    })
+                    .catch(() => {});
+            }, 1000);
+
+            window.loadMonWatches = function() {
+                fetch('/api/agent/watches').then(r => r.json()).then(d => {
+                    const ws = d.watches || [];
+                    document.getElementById('monWatchCount').textContent = ws.length + ' ativas';
+                    document.getElementById('monWatchesList').innerHTML = ws.length === 0
+                        ? '<div style="color:#888;padding:12px;">Nenhuma vigia ativa.</div>'
+                        : ws.map(w => {
+                            const rec = /sempre|toda vez|todo dia|diariamente/i.test(w.instruction || '');
+                            return `<div style="border-bottom:1px solid #1e293b;padding:8px 4px;display:flex;justify-content:space-between;gap:8px;align-items:center;">
+                                <div>
+                                    <div><span style="color:#38bdf8;font-weight:bold;">[${w.source}]</span> <strong>${w.filter}</strong> <span style="font-size:11px;color:${rec ? '#00ff88' : '#facc15'};">(${rec ? '🔁 Recorrente' : '⚡ Único'})</span></div>
+                                    <div style="font-size:12px;color:#cbd5e1;">${w.instruction}</div>
+                                </div>
+                                <button onclick="delMonWatch('${w.id}')" style="background:#991b1b;color:#fff;border:none;padding:4px 8px;border-radius:4px;cursor:pointer;">🗑️</button>
+                            </div>`;
+                        }).join('');
+                    const evs = d.recentEvents || [];
+                    document.getElementById('monWatchEvents').innerHTML = evs.length === 0
+                        ? '<div style="color:#888;padding:12px;">Sem disparos recentes.</div>'
+                        : evs.map(e => `<div style="border-bottom:1px solid #1e293b;padding:8px 4px;">
+                            <div style="font-size:11px;color:#00ff88;">${hhmmss(e.started_at)} • ${e.outcome}</div>
+                            <div style="font-size:12px;color:#94a3b8;">${(e.task || '').slice(0, 110)}</div>
+                            <div style="font-size:12px;color:#f8fafc;">${(e.answer || '').slice(0, 130)}</div>
+                        </div>`).join('');
+                }).catch(() => {});
+            };
+            window.addMonWatch = function() {
+                const source = document.getElementById('monWatchSrc').value;
+                const filter = document.getElementById('monWatchFilter').value.trim();
+                const instruction = document.getElementById('monWatchInst').value.trim() || 'Avisar usuário';
+                fetch('/api/agent/watches', { method:'POST', body: JSON.stringify({ source, filter, instruction }) })
+                    .then(() => { document.getElementById('monWatchFilter').value=''; loadMonWatches(); });
+            };
+            window.delMonWatch = function(id) {
+                fetch('/api/agent/watches/delete', { method:'POST', body: JSON.stringify({ id }) }).then(() => loadMonWatches());
+            };
+            window.loadMonEnergy = function() {
+                fetch('/api/agent/energy').then(r => r.json()).then(d => {
+                    const b = d.battery || {};
+                    const sc = d.sensorConfig || {};
+                    document.getElementById('monEnergySummary').innerHTML =
+                        `Nível: <b style="color:#00ff88">${b.level ?? '--'}%</b> | Temp: <b>${b.temperatureC ?? '--'} °C</b> | Voltagem: <b>${b.voltageMv ?? '--'} mV</b> (${b.source || 'Bateria'})<br>` +
+                        `Modo Sensores ADA: <b style="color:#38bdf8">${String(sc.mode || 'normal').toUpperCase()}</b> | Auto-Silêncio: <b>${sc.auto_silent ? 'Sim' : 'Não'}</b>`;
+                    const sl = sc.sensors_list || [];
+                    const toggleEl = document.getElementById('monX0SensorsToggleList');
+                    if (toggleEl) {
+                        toggleEl.innerHTML = sl.length === 0 ? 'Sem lista de sensores.' : sl.map(s => `
+                            <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid #1e293b;font-size:12px;">
+                                <div>
+                                    <div>${s.enabled ? '🟢 <b>ATIVO</b>' : '⚪ <span style="color:#94a3b8">DESLIGADO</span>'} · <b>${s.label}</b> <span style="font-size:10px;padding:1px 6px;border-radius:4px;background:${s.critical ? '#1e3a8a' : '#334155'};color:#e2e8f0;">${s.critical ? 'Crítico' : 'Não-crítico'}</span></div>
+                                    <div style="font-size:11px;color:#94a3b8;">${s.purpose}</div>
+                                </div>
+                                <button onclick="toggleMonSensor('${s.key}', ${!s.enabled})" style="background:${s.enabled ? '#991b1b' : '#047857'};color:#fff;border:none;padding:4px 10px;border-radius:6px;cursor:pointer;white-space:nowrap;">${s.enabled ? 'Desligar' : 'Ligar'}</button>
+                            </div>`).join('');
+                    }
+                    const ts = d.tools || [];
+                    document.getElementById('monEnergyTools').innerHTML = ts.length === 0 ? 'Sem dados.' : ts.map(t =>
+                        `<div style="display:flex;justify-content:space-between;border-bottom:1px solid #1e293b;padding:5px 4px;font-size:12px;">
+                            <span><code>${t.action}</code> (${t.calls}x)</span>
+                            <span style="color:${t.impact === 'Alto' ? '#f87171' : (t.impact === 'Médio' ? '#facc15' : '#00ff88')}">${t.impact}</span>
+                        </div>`).join('');
+                    const hs = d.hardwareSensors || [];
+                    document.getElementById('monEnergySensors').innerHTML = hs.length === 0 ? 'Sem dados.' : hs.map(s =>
+                        `<div style="display:flex;justify-content:space-between;border-bottom:1px solid #1e293b;padding:5px 4px;font-size:12px;">
+                            <span>${s.activeInAda ? '🟢' : '⚪'} ${s.name}</span>
+                            <span style="color:#38bdf8">${s.powerMa} mA</span>
+                        </div>`).join('');
+                }).catch(() => {});
+            };
+            window.setMonSensorMode = function(mode) {
+                fetch('/api/agent/energy/sensors', { method:'POST', body: JSON.stringify({ mode }) }).then(() => loadMonEnergy());
+            };
+            window.setMonSensorCriticalOnly = function() {
+                fetch('/api/agent/energy/sensors', { method:'POST', body: JSON.stringify({ keep_critical_only: true }) }).then(() => loadMonEnergy());
+            };
+            window.toggleMonSensor = function(key, enabled) {
+                const payload = {};
+                payload[key] = enabled;
+                fetch('/api/agent/energy/sensors', { method:'POST', body: JSON.stringify(payload) }).then(() => loadMonEnergy());
+            };
+
+            let cachedHistorySessions = [];
+            window.loadHistorySessions = function() {
+                fetch('/api/agent/harness-insights').then(r => r.json()).then(d => {
+                    cachedHistorySessions = d.recent_sessions || [];
+                    renderHistoryList();
+                }).catch(() => {});
+            };
+            window.renderHistoryList = function() {
+                const q = (document.getElementById('histSearch')?.value || '').toLowerCase().trim();
+                const flt = document.getElementById('histFilter')?.value || 'all';
+                const list = cachedHistorySessions.filter(s => {
+                    if (flt === 'success' && s.outcome !== 'success') return false;
+                    if (flt === 'non_success' && s.outcome === 'success') return false;
+                    if (q && !(`${s.task || ''} ${s.outcome || ''} ${s.reason || ''}`).toLowerCase().includes(q)) return false;
+                    return true;
+                });
+                const el = document.getElementById('histSessionsList');
+                if (!el) return;
+                el.innerHTML = list.length === 0
+                    ? '<div style="color:#888;padding:12px;">Nenhuma interação encontrada com este filtro.</div>'
+                    : list.map(s => {
+                        const ok = s.outcome === 'success';
+                        const badgeColor = ok ? '#00ff88' : '#facc15';
+                        return `<div onclick="inspectHistorySession('${s.session_id}')" style="cursor:pointer;border-bottom:1px solid #1e293b;padding:8px 6px;border-radius:6px;" onmouseover="this.style.background='#111c33'" onmouseout="this.style.background='transparent'">
+                            <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;">
+                                <code style="color:#94a3b8;">${(s.session_id || '').replace('sess_','')}</code>
+                                <span style="color:${badgeColor};font-weight:bold;">${s.outcome} (${s.steps || 0}p)</span>
+                            </div>
+                            <div style="font-size:12px;color:#e2e8f0;">${(s.task || '').slice(0, 95)}</div>
+                        </div>`;
+                    }).join('');
+            };
+            window.inspectHistorySession = function(sid) {
+                const box = document.getElementById('histSessionDetail');
+                if (box) box.innerHTML = '<div style="color:#38bdf8;padding:14px;">Carregando passos de ' + sid + '...</div>';
+                fetch('/api/agent/session/' + encodeURIComponent(sid)).then(r => r.json()).then(d => {
+                    if (!d.found) {
+                        box.innerHTML = '<div style="color:#f87171;">Sessão não encontrada.</div>';
+                        return;
+                    }
+                    const stepsHtml = (d.steps || []).map(st => `
+                        <div style="border-left:2px solid #38bdf8;padding:6px 8px;margin:8px 0;background:#0b1220;border-radius:4px;">
+                            <div style="font-size:11px;color:#38bdf8;"><b>Passo ${st.step}</b> • <code>${st.provider || '-'}</code> → <b>${st.action}</b></div>
+                            ${st.plan ? `<div style="font-size:11px;color:#94a3b8;margin-top:2px;">📋 ${st.plan}</div>` : ''}
+                            ${st.thought ? `<div style="font-size:12px;color:#cbd5e1;margin-top:3px;">💭 ${st.thought}</div>` : ''}
+                            <div style="font-size:11px;color:#a78bfa;margin-top:3px;">⚙️ <code>${st.args || '{}'}</code></div>
+                            ${st.result ? `<div style="font-size:11px;color:#00ff88;margin-top:3px;">↳ ${st.result}</div>` : ''}
+                        </div>`).join('');
+                    box.innerHTML = `
+                        <div style="border-bottom:1px solid #1e293b;padding-bottom:8px;margin-bottom:8px;">
+                            <div style="font-size:11px;color:#94a3b8;">${d.session_id} • <b style="color:${d.outcome==='success'?'#00ff88':'#facc15'}">${d.outcome}</b></div>
+                            <div style="font-size:13px;color:#f8fafc;margin-top:3px;"><b>Pedido:</b> ${d.task || '-'}</div>
+                            ${d.answer ? `<div style="font-size:12px;color:#00ff88;margin-top:3px;"><b>Resposta:</b> ${d.answer}</div>` : ''}
+                            ${d.verification_reason ? `<div style="font-size:11px;color:#94a3b8;margin-top:2px;"><b>Verificação:</b> ${d.verification_reason}</div>` : ''}
+                        </div>
+                        ${stepsHtml || '<div style="color:#888;">Sem passos registrados.</div>'}`;
+                }).catch(() => {});
+            };
+
+            loadHistorySessions();
+            loadMonWatches();
+            loadMonEnergy();
+            setInterval(() => { loadMonWatches(); loadMonEnergy(); }, 6000);
+        });
+    </script>
+</body>
+</html>

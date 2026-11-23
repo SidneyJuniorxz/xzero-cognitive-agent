@@ -1,0 +1,2463 @@
+<!DOCTYPE html>
+<html lang="pt-BR" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light dark">
+  <title>X0 / X-Zero — Central de Controle, Observabilidade & Harness Cognitivo</title>
+  <script>
+    (function () {
+      try {
+        var saved = localStorage.getItem('xzero-theme');
+        if (saved === 'light' || saved === 'dark') {
+          document.documentElement.setAttribute('data-theme', saved);
+        } else {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --brand-color: #6d28d9;
+      --accent-cyan: #0891b2;
+      --accent-green: #059669;
+      --accent-amber: #d97706;
+      --accent-red: #dc2626;
+
+      /* Legacy fallback variables before light-dark() */
+      --bg-primary: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-elevated: #f1f5f9;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --border-subtle: #cbd5e1;
+      --scrollbar-thumb: #64748b;
+      --scrollbar-track: #e2e8f0;
+
+      /* Modern light-dark() tokens */
+      --surface-page: light-dark(#f8fafc, #080b14);
+      --surface-card: light-dark(#ffffff, #101626);
+      --surface-elevated: light-dark(#f1f5f9, #182138);
+      --text-main: light-dark(#0f172a, #eef2ff);
+      --text-muted: light-dark(#475569, #94a3b8);
+      --border-color: light-dark(#cbd5e1, #26324d);
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --brand-color: #a855f7;
+        --accent-cyan: #22d3ee;
+        --accent-green: #34d399;
+        --accent-amber: #fbbf24;
+        --accent-red: #f87171;
+        --bg-primary: #080b14;
+        --bg-surface: #101626;
+        --bg-elevated: #182138;
+        --text-primary: #eef2ff;
+        --text-secondary: #94a3b8;
+        --border-subtle: #26324d;
+        --scrollbar-thumb: #475569;
+        --scrollbar-track: #0f172a;
+      }
+    }
+
+    html[data-theme="light"] {
+      color-scheme: light;
+      --brand-color: #6d28d9;
+      --accent-cyan: #0891b2;
+      --bg-primary: #f8fafc;
+      --bg-surface: #ffffff;
+      --bg-elevated: #f1f5f9;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --border-subtle: #cbd5e1;
+    }
+
+    html[data-theme="dark"] {
+      color-scheme: dark;
+      --brand-color: #a855f7;
+      --accent-cyan: #22d3ee;
+      --bg-primary: #080b14;
+      --bg-surface: #101626;
+      --bg-elevated: #182138;
+      --text-primary: #eef2ff;
+      --text-secondary: #94a3b8;
+      --border-subtle: #26324d;
+    }
+
+    @supports not (color: light-dark(white, black)) {
+      :root {
+        --surface-page: var(--bg-primary);
+        --surface-card: var(--bg-surface);
+        --surface-elevated: var(--bg-elevated);
+        --text-main: var(--text-primary);
+        --text-muted: var(--text-secondary);
+        --border-color: var(--border-subtle);
+      }
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: var(--surface-page);
+      color: var(--text-main);
+      accent-color: var(--brand-color);
+      line-height: 1.5;
+    }
+
+    /* Brand-consistent forms fallback for older browsers without accent-color */
+    @supports not (accent-color: var(--brand-color)) {
+      form input[type="checkbox"].visually-hidden {
+        position: absolute !important;
+        clip-path: inset(50%) !important;
+        overflow: hidden !important;
+        width: 1px !important;
+        height: 1px !important;
+        margin: -1px !important;
+        padding: 0 !important;
+        border: 0 !important;
+        white-space: nowrap !important;
+      }
+      label.checkbox-label {
+        position: relative;
+        padding-left: 2rem;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+      }
+      input[type="checkbox"] + span::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 1.2rem;
+        height: 1.2rem;
+        border: 2px solid #ccc;
+        background: white;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      input[type="checkbox"]:focus-visible + span::before {
+        outline: 2px solid #000;
+        outline-offset: 2px;
+      }
+      input[type="checkbox"]:checked + span::before {
+        background-color: var(--brand-color, #a855f7);
+        border-color: var(--brand-color, #a855f7);
+      }
+      input[type="checkbox"]:checked + span::after {
+        content: "✓";
+        position: absolute;
+        left: 0.25rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: white;
+        font-weight: bold;
+        font-size: 0.9rem;
+      }
+    }
+
+    /* Top Header */
+    .top-bar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+      padding: 0.9rem 1.5rem;
+      background: var(--surface-card);
+      border-bottom: 1px solid var(--border-color);
+      position: sticky;
+      top: 0;
+      z-index: 30;
+    }
+
+    .brand-group {
+      display: flex;
+      align-items: center;
+      gap: 0.9rem;
+    }
+
+    .xenon-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      background-color: var(--surface-elevated);
+      border: 2px solid var(--brand-color);
+      background-image: url('/xenon-spritesheet.png');
+      background-size: 800% 1100%;
+      background-position: 0% 0%;
+      image-rendering: auto;
+      box-shadow: 0 0 16px rgba(168, 85, 247, 0.35);
+      flex-shrink: 0;
+    }
+
+    .brand-title h1 {
+      margin: 0;
+      font-size: 1.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .brand-title p {
+      margin: 0.15rem 0 0;
+      font-size: 0.82rem;
+      color: var(--text-muted);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      padding: 0.22rem 0.65rem;
+      border-radius: 999px;
+      font-size: 0.76rem;
+      font-weight: 700;
+      border: 1px solid var(--border-color);
+      background: var(--surface-elevated);
+    }
+
+    .badge.ok {
+      color: var(--accent-green);
+      border-color: rgba(52, 211, 153, 0.4);
+    }
+
+    .badge.warn {
+      color: var(--accent-amber);
+      border-color: rgba(251, 191, 36, 0.4);
+    }
+
+    .badge.err {
+      color: var(--accent-red);
+      border-color: rgba(248, 113, 113, 0.4);
+    }
+
+    .badge.purple {
+      color: var(--brand-color);
+      border-color: rgba(168, 85, 247, 0.45);
+    }
+
+    .header-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.55rem;
+    }
+
+    button, .btn {
+      cursor: pointer;
+      font: inherit;
+      font-size: 0.84rem;
+      font-weight: 600;
+      padding: 0.5rem 0.9rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--surface-elevated);
+      color: var(--text-main);
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: background 0.15s ease, transform 0.1s ease;
+    }
+
+    button:hover {
+      border-color: var(--brand-color);
+    }
+
+    button.primary {
+      background: var(--brand-color);
+      color: #ffffff;
+      border-color: transparent;
+    }
+
+    button.cyan {
+      background: var(--accent-cyan);
+      color: #041016;
+      border-color: transparent;
+    }
+
+    button.danger {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--accent-red);
+      border-color: rgba(239, 68, 68, 0.4);
+    }
+
+    /* Accessible Tabs */
+    .tabs-wrapper {
+      max-width: 1480px;
+      margin: 0 auto;
+      padding: 1rem 1.5rem 3rem;
+    }
+
+    .tabs-scroller {
+      margin-bottom: 1.25rem;
+    }
+
+    [role="tablist"] {
+      display: flex;
+      border-bottom: 2px solid var(--border-color);
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scrollbar-width: none;
+      gap: 0.25rem;
+    }
+
+    [role="tablist"]::-webkit-scrollbar {
+      display: none;
+    }
+
+    [role="tab"] {
+      flex: 0 0 auto;
+      scroll-snap-align: start;
+      padding: 0.8rem 1.2rem;
+      border: none;
+      border-radius: 8px 8px 0 0;
+      background: none;
+      cursor: pointer;
+      font-size: 0.92rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      position: relative;
+      white-space: nowrap;
+    }
+
+    [role="tab"][aria-selected="true"] {
+      color: var(--brand-color);
+      background: var(--surface-card);
+    }
+
+    [role="tab"][aria-selected="true"]::after {
+      content: "";
+      position: absolute;
+      bottom: -2px;
+      left: 0;
+      right: 0;
+      height: 3px;
+      background-color: var(--brand-color);
+    }
+
+    [role="tab"]:focus-visible {
+      outline: 2px solid var(--brand-color);
+      outline-offset: -2px;
+    }
+
+    [role="tabpanel"] {
+      padding: 0.25rem 0;
+    }
+
+    [role="tabpanel"][hidden] {
+      display: none;
+    }
+
+    /* Grid & Cards */
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+      gap: 1rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+      gap: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .grid-main-side {
+      display: grid;
+      grid-template-columns: 1fr 370px;
+      gap: 1.25rem;
+      margin-bottom: 1.25rem;
+    }
+
+    @media (max-width: 1024px) {
+      .grid-main-side, .grid-2 {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--surface-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.15rem;
+    }
+
+    .card h2, .card h3 {
+      margin: 0 0 0.75rem;
+      font-size: 1rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .metric-val {
+      font-size: 1.65rem;
+      font-weight: 800;
+      margin: 0.2rem 0;
+    }
+
+    .metric-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Quick Command Bar */
+    .command-bar {
+      display: flex;
+      gap: 0.65rem;
+      margin-bottom: 1.25rem;
+      background: var(--surface-card);
+      padding: 0.85rem;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      flex-wrap: wrap;
+    }
+
+    input[type="text"],
+    input[type="password"],
+    input[type="url"],
+    select,
+    textarea {
+      font: inherit;
+      font-size: 0.9rem;
+      padding: 0.58rem 0.8rem;
+      border-radius: 8px;
+      border: 1px solid var(--border-color);
+      background: var(--surface-elevated);
+      color: var(--text-main);
+      width: 100%;
+    }
+
+    .command-bar input[type="text"] {
+      flex: 1 1 320px;
+    }
+
+    /* Responsive Sticky Tables */
+    .table-container {
+      container-type: inline-size;
+      overflow-x: auto;
+      max-height: 540px;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      scrollbar-width: thin;
+      scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+    }
+
+    @supports not (scrollbar-color: auto) {
+      .table-container::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+      }
+      .table-container::-webkit-scrollbar-thumb {
+        background: var(--scrollbar-thumb);
+      }
+      .table-container::-webkit-scrollbar-track {
+        background: var(--scrollbar-track);
+      }
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.86rem;
+    }
+
+    th, td {
+      padding: 0.7rem 0.9rem;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: top;
+    }
+
+    thead th {
+      position: sticky;
+      top: 0;
+      background: linear-gradient(var(--surface-elevated) 0 100%);
+      z-index: 2;
+      font-weight: 700;
+    }
+
+    tbody th {
+      position: sticky;
+      left: 0;
+      background: linear-gradient(var(--surface-card) 0 100%);
+      z-index: 1;
+      font-weight: 700;
+    }
+
+    thead th:first-child {
+      left: 0;
+      z-index: 3;
+    }
+
+    @container (max-width: 640px) {
+      table, thead, tbody, th, td, tr {
+        display: block;
+      }
+      thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+      }
+      tr {
+        margin-bottom: 0.85rem;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        padding: 0.4rem;
+      }
+      td, tbody th {
+        position: static;
+        display: grid;
+        grid-template-columns: 7.5rem 1fr;
+        gap: 0.5rem;
+        padding: 0.45rem 0.5rem;
+        text-align: right;
+      }
+      td::before, tbody th::before {
+        content: attr(data-label);
+        font-weight: 700;
+        text-align: left;
+        color: var(--text-muted);
+      }
+    }
+
+    /* Live Screen Preview */
+    .screen-frame {
+      width: 100%;
+      max-width: 310px;
+      margin: 0 auto;
+      border-radius: 18px;
+      overflow: hidden;
+      border: 3px solid var(--border-color);
+      background: #05070d;
+      aspect-ratio: 9 / 19.5;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+    }
+
+    .screen-frame img {
+      width: 100%;
+      height: 100%;
+      object-fit: contain;
+      display: block;
+    }
+
+    /* Log Console */
+    .log-stream {
+      font-family: 'JetBrains Mono', 'Fira Code', monospace;
+      font-size: 0.79rem;
+      background: #060911;
+      color: #e2e8f0;
+      border-radius: 10px;
+      padding: 0.85rem;
+      max-height: 460px;
+      overflow-y: auto;
+      border: 1px solid var(--border-color);
+    }
+
+    .log-line {
+      padding: 0.25rem 0.35rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      display: flex;
+      gap: 0.6rem;
+      align-items: baseline;
+      word-break: break-word;
+    }
+
+    .log-time {
+      color: #64748b;
+      flex-shrink: 0;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 0.85rem;
+      margin-bottom: 1rem;
+    }
+
+    .field label {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      margin-bottom: 0.3rem;
+      color: var(--text-muted);
+    }
+
+    .status-toast {
+      position: fixed;
+      bottom: 1.25rem;
+      right: 1.25rem;
+      background: var(--surface-card);
+      border: 2px solid var(--brand-color);
+      color: var(--text-main);
+      padding: 0.75rem 1.1rem;
+      border-radius: 10px;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.45);
+      z-index: 100;
+      display: none;
+      max-width: 420px;
+      font-size: 0.86rem;
+    }
+
+    code.inline {
+      font-family: monospace;
+      background: var(--surface-elevated);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.82rem;
+    }
+
+    /* ==========================================================================
+       RESPONSIVIDADE — medida, não adivinhada
+       --------------------------------------------------------------------------
+       Em 375x812 (o tamanho do próprio Motorola que este painel monitora), o
+       `.top-bar` sticky media 354px de altura: `flex-wrap: wrap` quebrava os 5
+       botões de ação em 4 linhas, e o cabeçalho grudado no topo comia 44% da
+       tela. Sobravam ~450px para a telemetria, com o cabeçalho sempre no caminho.
+       ========================================================================== */
+
+    /* Faixa de abas: 8 abas somam 1984px de conteúdo em 327px visíveis. A barra de
+       rolagem está escondida (scrollbar-width: none), então sem esta pista visual
+       nada indica que existem 6 abas à direita — elas ficavam inalcançáveis na
+       prática. A máscara desaparece quando a rolagem chega ao fim. */
+    .tabs-scroller {
+      position: relative;
+    }
+
+    .tabs-scroller::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: 2.5rem;
+      height: 100%;
+      pointer-events: none;
+      background: linear-gradient(to right, transparent, var(--surface-page));
+      opacity: var(--tabs-overflow-end, 0);
+      transition: opacity 0.18s ease;
+    }
+
+    @media (max-width: 760px) {
+      .top-bar {
+        /* Vira fluxo vertical em vez de wrap imprevisível: a altura passa a ser
+           função do conteúdo, não do número de botões que couberam na linha. */
+        flex-wrap: nowrap;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.6rem;
+        padding: 0.65rem 0.9rem;
+        /* Deixa de ser sticky no celular: com a tela curta, qualquer cabeçalho
+           fixo rouba mais do que entrega. O estado vivo (ADB/agente) continua
+           visível porque as badges sobem junto com o título. */
+        position: static;
+      }
+
+      .brand-group {
+        gap: 0.6rem;
+      }
+
+      .xenon-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 9px;
+      }
+
+      .brand-title h1 {
+        font-size: 1rem;
+        flex-wrap: wrap;
+        gap: 0.35rem;
+      }
+
+      /* O subtítulo longo custava 3 linhas no celular sem acrescentar nada
+         operacional — a mesma informação está nos painéis. */
+      .brand-title p {
+        display: none;
+      }
+
+      /* Ações viram uma fileira rolável de uma linha só, em vez de 4 linhas
+         empilhadas. Mantém todos os botões alcançáveis sem crescer na vertical. */
+      .header-actions {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+        scrollbar-width: none;
+        padding-bottom: 0.15rem;
+        gap: 0.4rem;
+      }
+
+      .header-actions::-webkit-scrollbar {
+        display: none;
+      }
+
+      .header-actions > button,
+      .header-actions > .btn {
+        flex: 0 0 auto;
+      }
+
+      .tabs-wrapper {
+        padding: 0.75rem 0.9rem 2.5rem;
+      }
+
+      [role="tab"] {
+        padding: 0.7rem 0.85rem;
+        font-size: 0.82rem;
+      }
+
+      .grid-4 {
+        /* 230px de piso somado ao gap transbordava num container de 327px. */
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 0.7rem;
+      }
+
+      .card {
+        padding: 0.85rem;
+        border-radius: 10px;
+      }
+
+      /* O toast ancorado à direita com largura fixa de 420px não cabe em 375px. */
+      .status-toast {
+        left: 0.75rem;
+        right: 0.75rem;
+        bottom: 0.75rem;
+        max-width: none;
+      }
+    }
+
+    /* Alvos de toque: 9 botões mediam 38px de altura, abaixo do mínimo de 44px
+       (WCAG 2.5.5 / HIG) e dos 48dp do Android. Em um painel que se opera com o
+       polegar enquanto o celular executa a tarefa, errar o botão custa caro. */
+    @media (pointer: coarse) {
+      button, .btn, [role="tab"] {
+        min-height: 44px;
+      }
+
+      input, select, textarea {
+        min-height: 44px;
+      }
+    }
+
+    /* Respeita quem pediu menos movimento: a animação do Xenon é decorativa. */
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="top-bar">
+    <div class="brand-group">
+      <div class="xenon-avatar" id="xenon-sprite" title="Xenon — forma visível da ADA (spritesheet 8x11 + emoções)"></div>
+      <div class="brand-title">
+        <h1>
+          X0 / X-Zero Control Center
+          <span class="badge ok" id="adb-status-badge">Conectando ADB...</span>
+          <span class="badge purple" id="agent-state-badge">Idle</span>
+        </h1>
+        <p>Harness Cognitivo Autônomo • celular Android • Grafo Vetorial + RL Step Scoring + Vigias Proativas + Guardrails CUA</p>
+      </div>
+    </div>
+
+    <div class="header-actions">
+      <button type="button" class="cyan" id="btn-listen" title="Ativar escuta de voz no celular">🎙️ Escutar Agora</button>
+      <button type="button" id="btn-heal" title="Executar Healthcheck e Auto-Heal">🩺 Healthcheck & Heal</button>
+      <button type="button" id="btn-adb-wifi" title="Ativar ADB Wi-Fi na porta 5555">📶 Ativar ADB Wi-Fi</button>
+      <button type="button" class="danger" id="btn-recover" title="Cancelar tarefa travada e voltar para Home">🧯 Destravar UI</button>
+      <button type="button" id="btn-theme-toggle" title="Alternar tema Claro/Escuro">🌓 Tema</button>
+    </div>
+  </header>
+
+  <main class="tabs-wrapper">
+    <!-- Barra de Comando Direto para o XZERO -->
+    <form class="command-bar" id="quick-ask-form">
+      <input type="text" id="quick-ask-input" placeholder="Envie uma missão ou digite '/btw detalhe em paralelo' para incluir contexto sem parar o pensamento atual..." required>
+      <button type="submit" class="primary">🚀 Disparar Missão (ASK)</button>
+      <button type="button" class="cyan" id="btn-send-btw" title="Injetar contexto em paralelo (/btw estilo Claude) sem interromper os acertos atuais">📌 Injetar /btw Paralelo</button>
+      <button type="button" id="btn-record-start">🔴 Gravar Ambiente</button>
+      <button type="button" id="btn-record-stop">⏹️ Parar Gravação</button>
+    </form>
+
+    <!-- Accessible Tablist -->
+    <div class="tabs-container">
+      <div class="tabs-scroller"><div role="tablist" aria-label="Seções do Painel de Controle XZERO">
+        <button role="tab" aria-selected="true" aria-controls="panel-overview" id="tab-overview" tabindex="0">
+          📡 Visão Geral & Telemetria
+        </button>
+        <button role="tab" aria-selected="false" aria-controls="panel-observability" id="tab-observability" tabindex="-1">
+          📜 Logs & Trajetórias RL (⭐)
+        </button>
+        <button role="tab" aria-selected="false" aria-controls="panel-watches" id="tab-watches" tabindex="-1">
+          👁️ Vigias & Agenda
+        </button>
+        <button role="tab" aria-selected="false" aria-controls="panel-energy" id="tab-energy" tabindex="-1">
+          🔋 Energia & Sensores
+        </button>
+        <button role="tab" aria-selected="false" aria-controls="panel-mon3030" id="tab-mon3030" tabindex="-1">
+          🧠 Monitor :3030 (Raciocínio & Erros)
+        </button>
+        <button role="tab" aria-selected="false" aria-controls="panel-memory" id="tab-memory" tabindex="-1">
+          🧠 Grafo Vetorial & Política Q
+        </button>
+        <button role="tab" aria-selected="false" aria-controls="panel-tools" id="tab-tools" tabindex="-1">
+          🛠️ Catálogo de Ferramentas (28 Tools)
+        </button>
+        <button role="tab" aria-selected="false" aria-controls="panel-config" id="tab-config" tabindex="-1">
+          ⚙️ Motores LLM, APIs & Cloudflare
+        </button>
+      </div></div>
+
+      <!-- TAB 1: VISÃO GERAL & TELEMETRIA -->
+      <div role="tabpanel" id="panel-overview" aria-labelledby="tab-overview" tabindex="0">
+        <div class="grid-4">
+          <div class="card">
+            <h3>🔋 Energia & Térmica</h3>
+            <div class="metric-val" id="metric-battery">--%</div>
+            <div class="metric-sub" id="metric-temp">Temperatura: --°C</div>
+          </div>
+          <div class="card">
+            <h3>💾 Memória RAM & Uptime</h3>
+            <div class="metric-val" id="metric-ram">-- / -- MB</div>
+            <div class="metric-sub" id="metric-uptime">Uptime: -- min</div>
+          </div>
+          <div class="card">
+            <h3>💡 Sensores Físicos Ao Vivo</h3>
+            <div class="metric-val" id="metric-lux">-- lux</div>
+            <div class="metric-sub" id="metric-motion">Movimento: --</div>
+          </div>
+          <div class="card">
+            <h3>🧠 Cognição & Vigias Ativas</h3>
+            <div class="metric-val" id="metric-graph">-- relações</div>
+            <div class="metric-sub" id="metric-watches">-- vigias | -- rotas campeãs</div>
+          </div>
+        </div>
+
+        <div class="grid-main-side">
+          <div class="card">
+            <h2>
+              <span>🛡️ Status dos Serviços Internos & Permissões</span>
+              <span class="badge ok" id="health-overall-pill">Verificando...</span>
+            </h2>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Componente / Serviço</th>
+                    <th>Estado</th>
+                    <th>Papel na Arquitetura X0 / X-Zero</th>
+                  </tr>
+                </thead>
+                <tbody id="services-tbody">
+                  <tr>
+                    <th scope="row" data-label="Componente">BubbleService (Xenon Pet)</th>
+                    <td data-label="Estado"><span class="badge" id="srv-bubble">--</span></td>
+                    <td data-label="Papel">Xenon animado (8x11 + emoções), balão flutuante, TTS Neural pt-BR e orquestrador.</td>
+                  </tr>
+                  <tr>
+                    <th scope="row" data-label="Componente">AgentAccessibilityService</th>
+                    <td data-label="Estado"><span class="badge" id="srv-a11y">--</span></td>
+                    <td data-label="Papel">Leitura da árvore de UI, toques, gestos, auto-click no WhatsApp e anti-ANR.</td>
+                  </tr>
+                  <tr>
+                    <th scope="row" data-label="Componente">NotifListener + ProactiveWatcher</th>
+                    <td data-label="Estado"><span class="badge" id="srv-notif">--</span></td>
+                    <td data-label="Papel">Interceptação de notificações (WhatsApp, E-mail, Claude, Codex) e resposta direta.</td>
+                  </tr>
+                  <tr>
+                    <th scope="row" data-label="Componente">Gravador Ambiente (.m4a)</th>
+                    <td data-label="Estado"><span class="badge" id="srv-rec">--</span></td>
+                    <td data-label="Papel">Captura silenciosa de áudio AAC em segundo plano quando solicitado ou combinado.</td>
+                  </tr>
+                  <tr>
+                    <th scope="row" data-label="Componente">Wake Word ("X0 / X-Zero")</th>
+                    <td data-label="Estado"><span class="badge" id="srv-wake">--</span></td>
+                    <td data-label="Papel">Reconhecimento contínuo por comando de voz ("X0 / X-Zero"), postura ou gesto de agitar (Shake) + /btw.</td>
+                  </tr>
+                  <tr>
+                    <th scope="row" data-label="Componente">Motor LLM Primário</th>
+                    <td data-label="Estado"><span class="badge purple" id="srv-llm">--</span></td>
+                    <td data-label="Papel">Roteador multimodal com fallback automático (Gemini ↔ Claude ↔ OpenAI).</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>
+              <span>📱 Espelho da Tela (ADB Live)</span>
+              <button type="button" id="btn-refresh-screen">🔄 Capturar</button>
+            </h2>
+            <div class="screen-frame">
+              <img id="live-screen-img" src="/api/screen" alt="Captura da tela atual do celular Android" loading="lazy">
+            </div>
+            <p class="metric-sub" style="text-align:center; margin-top:0.6rem;">
+              Clique em <strong>Capturar</strong> para atualizar o frame em tempo real via <code class="inline">screencap -p</code>.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 2: LOGS & TRAJETÓRIAS RL -->
+      <div role="tabpanel" id="panel-observability" aria-labelledby="tab-observability" tabindex="0" hidden="until-found">
+        <div class="grid-2">
+          <div class="card">
+            <h2>
+              <span>📟 Terminal Logcat ao Vivo (<code class="inline">AgentePhone:I</code>)</span>
+              <div style="display:flex; gap:0.5rem; align-items:center;">
+                <label class="checkbox-label" for="chk-autolog">
+                  <input type="checkbox" id="chk-autolog" class="visually-hidden" checked>
+                  <span>Auto-refresh (4s)</span>
+                </label>
+                <button type="button" id="btn-refresh-logs">🔄 Atualizar</button>
+              </div>
+            </h2>
+            <div class="log-stream" id="logcat-box">Carregando eventos do logcat...</div>
+          </div>
+
+          <div class="card">
+            <h2>
+              <span>🏆 Inspetor de Passos da Sessão Selecionada</span>
+              <span class="badge purple" id="selected-session-badge">Selecione uma sessão</span>
+            </h2>
+            <div class="log-stream" id="trajectory-steps-box">
+              Clique em uma sessão na tabela abaixo para inspecionar o plano, pensamento, ação executada e a pontuação de eficiência RL (⭐) de cada etapa.
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2>
+            <span>📊 Histórico de Missões & Pontuação de Eficiência (Reinforcement Learning)</span>
+            <button type="button" id="btn-refresh-trajectories">🔄 Recarregar Sessões</button>
+          </h2>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Sessão</th>
+                  <th>Objetivo / Tarefa</th>
+                  <th>Passos</th>
+                  <th>Score RL (⭐)</th>
+                  <th>Rota Executada</th>
+                  <th>Resultado / Resposta</th>
+                  <th>Ação</th>
+                </tr>
+              </thead>
+              <tbody id="trajectories-tbody">
+                <tr><td colspan="7">Carregando trajetórias...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 3: GRAFO VETORIAL & VIGIAS PROATIVAS -->
+      <div role="tabpanel" id="panel-memory" aria-labelledby="tab-memory" tabindex="0" hidden="until-found">
+        <div style="margin-bottom: 1.25rem;">
+          <!-- Grafo de Conhecimento -->
+          <div class="card">
+            <h2>
+              <span>🕸️ Grafo Vetorial de Conhecimento (<code class="inline">knowledge_graph_v2.json</code>)</span>
+              <span class="badge purple" id="edges-count-badge">0 arestas</span>
+            </h2>
+            <form id="form-add-edge" style="margin-bottom: 1rem;">
+              <div class="form-grid">
+                <div class="field">
+                  <label for="edge-subject">Sujeito / Entidade</label>
+                  <input type="text" id="edge-subject" placeholder="Ex: ColegaEquipe" required>
+                </div>
+                <div class="field">
+                  <label for="edge-relation">Relação Semântica</label>
+                  <input type="text" id="edge-relation" placeholder="Ex: trabalha_com" required>
+                </div>
+                <div class="field">
+                  <label for="edge-target">Alvo / Valor</label>
+                  <input type="text" id="edge-target" placeholder="Ex: Fulano na Empresa X" required>
+                </div>
+              </div>
+              <button type="submit" class="primary">🧠 Salvar Relação no Grafo</button>
+            </form>
+
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Entidade (Sujeito)</th>
+                    <th>Relação</th>
+                    <th>Alvo / Conhecimento</th>
+                    <th>Peso</th>
+                    <th>Ação</th>
+                  </tr>
+                </thead>
+                <tbody id="edges-tbody">
+                  <tr><td colspan="5">Carregando grafo...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Política de Decisão Aprendida Q(s,a) -->
+        <div class="card" style="margin-bottom: 1.25rem;">
+          <h2>
+            <span>🎯 Política de Decisão Aprendida Q(s,a) (Contextual Reinforcement Learning)</span>
+            <span class="badge ok" id="qpolicy-count-badge">0 pares (s,a)</span>
+          </h2>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Estado / Cluster de Intenção (s)</th>
+                  <th>Ação (a)</th>
+                  <th>Valor Q(s,a) Aprendido</th>
+                  <th>Visitas</th>
+                  <th>Vitórias Verificadas (goal_verified)</th>
+                </tr>
+              </thead>
+              <tbody id="qpolicy-tbody">
+                <tr><td colspan="5">Carregando política Q(s,a)...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Rotas Campeãs Aprendidas -->
+        <div class="card">
+          <h2>
+            <span>🏅 Rotas Campeãs Verificadas (Golden Routes • goal_verified = true)</span>
+          </h2>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>Intenção / Objetivo Aprendido</th>
+                  <th>Sequência de Etapas Campeã</th>
+                  <th>Score Médio (⭐)</th>
+                  <th>Execuções</th>
+                </tr>
+              </thead>
+              <tbody id="routes-tbody">
+                <tr><td colspan="4">Carregando rotas campeãs...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: VIGIAS & ATIVIDADES AGENDADAS -->
+      <div role="tabpanel" id="panel-watches" aria-labelledby="tab-watches" tabindex="0" hidden="until-found">
+        <div class="grid-4" style="margin-bottom: 1.25rem;">
+          <div class="card">
+            <div class="metric-label">Vigias Ativas</div>
+            <div class="metric-value" id="watches-stat-total">0</div>
+            <div class="metric-sub">Monitoramento contínuo no aparelho</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Desbloqueio & Sistema</div>
+            <div class="metric-value" id="watches-stat-unlock">0</div>
+            <div class="metric-sub">Gatilhos de tela / sistema</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Apps & Mensagens</div>
+            <div class="metric-value" id="watches-stat-apps">0</div>
+            <div class="metric-sub">WhatsApp, E-mail, Claude, Codex</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Modo de Disparo</div>
+            <div class="metric-value" id="watches-stat-mode">0 / 0</div>
+            <div class="metric-sub">Único vs Recorrente</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <h2>
+              <span>👁️ Atividades em Vigia & Agendamentos</span>
+              <span class="badge ok" id="watches-count-badge">0 ativas</span>
+            </h2>
+            <form id="form-add-watch" style="margin-bottom: 1rem;">
+              <div class="form-grid">
+                <div class="field">
+                  <label for="watch-source">Gatilho / Aplicativo</label>
+                  <select id="watch-source">
+                    <option value="unlock">🔓 Ao Desbloquear o Celular</option>
+                    <option value="whatsapp">💬 WhatsApp</option>
+                    <option value="email">📧 Gmail / E-mail</option>
+                    <option value="claude">🤖 Claude Android App</option>
+                    <option value="codex">⚡ ChatGPT / Codex</option>
+                    <option value="any">🌐 Qualquer Notificação</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="watch-filter">Filtro (Contato, Palavra ou Gatilho)</label>
+                  <input type="text" id="watch-filter" placeholder="Ex: Alana, desbloqueio, Deploy, Urgente" required>
+                </div>
+              </div>
+              <div class="field" style="margin-bottom:0.75rem;">
+                <label for="watch-instruction">O que o Ada / Xenon deve fazer quando disparar</label>
+                <input type="text" id="watch-instruction" value="Me avise por voz e sugira como prosseguir com base no contexto" required>
+              </div>
+              <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+                <label class="checkbox-label" for="watch-autoopen">
+                  <input type="checkbox" id="watch-autoopen" class="visually-hidden">
+                  <span>Abrir o app automaticamente ao disparar</span>
+                </label>
+                <button type="submit" class="primary">➕ Agendar Vigia</button>
+              </div>
+            </form>
+
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>Gatilho</th>
+                    <th>Modo</th>
+                    <th>Filtro</th>
+                    <th>Instrução</th>
+                    <th>Ação</th>
+                  </tr>
+                </thead>
+                <tbody id="watches-tbody">
+                  <tr><td colspan="6">Nenhuma vigia ativa.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>
+              <span>🕒 Histórico Recente de Disparos de Vigia</span>
+              <span class="badge purple" id="watches-events-badge">0 eventos</span>
+            </h2>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Hora</th>
+                    <th>Status</th>
+                    <th>Gatilho / Resposta da ADA</th>
+                  </tr>
+                </thead>
+                <tbody id="watches-events-tbody">
+                  <tr><td colspan="3">Nenhum disparo recente registrado nas trajetórias.</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: ENERGIA & GERENCIAMENTO DE BATERIA -->
+      <div role="tabpanel" id="panel-energy" aria-labelledby="tab-energy" tabindex="0" hidden="until-found">
+        <div class="grid-4" style="margin-bottom: 1.25rem;">
+          <div class="card">
+            <div class="metric-label">Bateria Atual</div>
+            <div class="metric-value" id="energy-level">--%</div>
+            <div class="metric-sub" id="energy-temp">-- °C • Fonte: --</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Dreno Calculado (Sessão)</div>
+            <div class="metric-value" id="energy-drain">-- mAh</div>
+            <div class="metric-sub" id="energy-cap">Capacidade: -- mAh</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Consumo de Sensores</div>
+            <div class="metric-value" id="energy-sensors-mah">-- mAh</div>
+            <div class="metric-sub" id="energy-sensors-active">-- conexões ativas</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Gerenciamento X0</div>
+            <div class="metric-value" id="energy-sensor-mode" style="font-size:1.3rem;">--</div>
+            <div style="display:flex; gap:0.4rem; margin-top:0.5rem; flex-wrap:wrap;">
+              <button type="button" class="primary" onclick="setSensorPowerMode('normal')">⚡ Normal</button>
+              <button type="button" onclick="setSensorPowerMode('eco')">🌿 Eco</button>
+              <button type="button" onclick="setSensorPowerConfig({ keep_critical_only: true })">🛡️ Só Críticos</button>
+              <button type="button" onclick="loadEnergyTelemetry()">🔄</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 1.25rem;">
+          <h2>
+            <span>🎛️ Sensores do X-Zero (Ativos vs Desativados)</span>
+            <span class="badge ok" id="energy-x0-sensors-badge">-- ativos</span>
+          </h2>
+          <div id="energy-x0-sensors-list">Carregando sensores do X-Zero...</div>
+        </div>
+
+        <div class="grid-2" style="margin-bottom: 1.25rem;">
+          <div class="card">
+            <h2>
+              <span>📊 Consumo por Subsistema / Hardware (mAh)</span>
+              <span class="badge purple">batterystats</span>
+            </h2>
+            <div id="energy-subsystems-list">Carregando subsistemas...</div>
+          </div>
+
+          <div class="card">
+            <h2>
+              <span>🛠️ Consumo & Impacto por Ferramenta do X0</span>
+              <span class="badge ok" id="energy-tools-badge">0 tools</span>
+            </h2>
+            <div class="table-container" style="max-height: 360px;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Ferramenta</th>
+                    <th>Chamadas</th>
+                    <th>Impacto</th>
+                    <th>Peso</th>
+                    <th>Motivo</th>
+                  </tr>
+                </thead>
+                <tbody id="energy-tools-tbody">
+                  <tr><td colspan="5">Carregando ferramentas...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <h2>
+              <span>📱 Top Apps Consumidores de Bateria (UID → Pacote)</span>
+              <span class="badge warn" id="energy-apps-badge">0 apps</span>
+            </h2>
+            <div class="table-container" style="max-height: 400px;">
+              <table>
+                <thead>
+                  <tr>
+                    <th>App / Pacote</th>
+                    <th>Total</th>
+                    <th>Tela</th>
+                    <th>CPU</th>
+                    <th>Sensores</th>
+                    <th>Câmera/Rede</th>
+                  </tr>
+                </thead>
+                <tbody id="energy-apps-tbody">
+                  <tr><td colspan="6">Carregando consumo por app...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>
+              <span>📡 Sensores Ativos no Hardware (<code class="inline">sensorservice</code>)</span>
+              <span class="badge ok" id="energy-hw-badge">0</span>
+            </h2>
+            <div id="energy-hw-list" style="max-height: 400px; overflow:auto; font-size:0.86rem;">
+              Carregando sensores ativos...
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB: MONITOR :3030 UNIFICADO (RACIOCÍNIO, ERROS, HARNESS, ÁUDIO/VAD) -->
+      <div role="tabpanel" id="panel-mon3030" aria-labelledby="tab-mon3030" tabindex="0" hidden="until-found">
+        <div class="grid-4" style="margin-bottom: 1.25rem;">
+          <div class="card">
+            <div class="metric-label">Sucesso Real (Harness :3030)</div>
+            <div class="metric-value" id="m3030-rate">--%</div>
+            <div class="metric-sub" id="m3030-sessions">-- sessões</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Erros Detectados</div>
+            <div class="metric-value" id="m3030-errors">0</div>
+            <div class="metric-sub">ErrorDetector em tempo real</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Estado do Microfone / VAD</div>
+            <div class="metric-value" id="m3030-mic" style="font-size:1.15rem;">--</div>
+            <div class="metric-sub" id="m3030-snr">SNR: -- dB | Piso: -- dBFS</div>
+          </div>
+          <div class="card">
+            <div class="metric-label">Acesso Clássico :3030</div>
+            <div style="display:flex; gap:0.5rem; margin-top:0.4rem; flex-wrap:wrap;">
+              <button type="button" class="primary" onclick="loadMonitoring3030()">🔄 Atualizar :3030</button>
+              <a href="/monitoring" target="_blank" class="badge purple" style="text-decoration:none; padding:0.45rem 0.7rem;">🌐 Abrir /monitoring</a>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 1.25rem;">
+          <h2>
+            <span>🎛️ Sensores do X-Zero (Ativos vs Desativados)</span>
+            <span class="badge ok" id="energy-x0-sensors-badge">-- ativos</span>
+          </h2>
+          <div id="energy-x0-sensors-list">Carregando sensores do X-Zero...</div>
+        </div>
+
+        <div class="grid-2" style="margin-bottom: 1.25rem;">
+          <div class="card">
+            <h2><span>💭 Raciocínio em Tempo Real (<code class="inline">:3030/thinking</code>)</span></h2>
+            <div id="m3030-thinking-list" style="max-height:360px; overflow:auto; font-size:0.86rem;">Carregando...</div>
+          </div>
+          <div class="card">
+            <h2><span>⚠️ Erros & Auto-Correções (<code class="inline">:3030/errors</code>)</span></h2>
+            <div id="m3030-errors-list" style="max-height:360px; overflow:auto; font-size:0.86rem;">Carregando...</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <h2><span>🏛️ Harness Insights & Gargalos (<code class="inline">:3030/harness-insights</code>)</span></h2>
+          <div id="m3030-harness-box" style="font-size:0.88rem; line-height:1.6;">Carregando...</div>
+        </div>
+      </div>
+
+      <!-- TAB 4: CATÁLOGO DE FERRAMENTAS -->
+      <div role="tabpanel" id="panel-tools" aria-labelledby="tab-tools" tabindex="0" hidden="until-found">
+        <div class="card">
+          <h2>
+            <span>🛠️ Catálogo Completo das Ferramentas Nativas do X0 / X-Zero</span>
+            <input type="text" id="tools-search" placeholder="Filtrar ferramenta por nome, categoria ou descrição..." style="max-width: 340px;">
+          </h2>
+          <div class="table-container" style="max-height: 680px;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tool (`action`)</th>
+                  <th>Categoria</th>
+                  <th>RL Score Base</th>
+                  <th>Descrição Técnica</th>
+                  <th>Exemplo de Payload JSON</th>
+                  <th>Testar no Celular</th>
+                </tr>
+              </thead>
+              <tbody id="tools-tbody">
+                <tr><td colspan="6">Carregando catálogo...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TAB 5: CONFIGURAÇÃO DE APIS & CLOUDFLARE -->
+      <div role="tabpanel" id="panel-config" aria-labelledby="tab-config" tabindex="0" hidden="until-found">
+        <div class="grid-2">
+          <div class="card">
+            <h2>⚙️ Configuração de Motores LLM, Chaves de API & Voz</h2>
+            <form id="form-config">
+              <div class="form-grid">
+                <div class="field">
+                  <label for="cfg-primary">Provedor LLM Primário (Orquestrador)</label>
+                  <select id="cfg-primary">
+                    <option value="gemini">Google Gemini (Recomendado / Rápido)</option>
+                    <option value="claude">Anthropic Claude</option>
+                    <option value="openai">OpenAI GPT</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="cfg-gemini-model">Modelo Gemini</label>
+                  <input type="text" id="cfg-gemini-model" value="gemini-3.1-flash-lite">
+                </div>
+              </div>
+
+              <div class="form-grid">
+                <div class="field">
+                  <label for="cfg-gemini-key">Gemini API Key (deixe em branco para manter a atual)</label>
+                  <input type="password" id="cfg-gemini-key" placeholder="AIzaSy...">
+                </div>
+                <div class="field">
+                  <label for="cfg-claude-model">Modelo Claude</label>
+                  <input type="text" id="cfg-claude-model" value="claude-3-5-haiku-latest">
+                </div>
+              </div>
+
+              <div class="form-grid">
+                <div class="field">
+                  <label for="cfg-claude-key">Claude API Key (opcional / fallback)</label>
+                  <input type="password" id="cfg-claude-key" placeholder="sk-ant-...">
+                </div>
+                <div class="field">
+                  <label for="cfg-openai-model">Modelo OpenAI</label>
+                  <input type="text" id="cfg-openai-model" value="gpt-4o-mini">
+                </div>
+              </div>
+
+              <div class="field" style="margin-bottom: 1rem;">
+                <label for="cfg-openai-key">OpenAI API Key (opcional / fallback)</label>
+                <input type="password" id="cfg-openai-key" placeholder="sk-proj-...">
+              </div>
+
+              <div style="display:flex; flex-direction:column; gap:0.6rem; margin-bottom:1.1rem;">
+                <label class="checkbox-label" for="cfg-wake">
+                  <input type="checkbox" id="cfg-wake" class="visually-hidden" checked>
+                  <span>Ativar Wake Word Contínuo ("X0 / X-Zero" + Gesto Shake no Acelerômetro)</span>
+                </label>
+                <label class="checkbox-label" for="cfg-speak">
+                  <input type="checkbox" id="cfg-speak" class="visually-hidden" checked>
+                  <span>Falar Respostas em Voz Alta (Voz Neural <code class="inline">pt-br-x-pte-local</code>)</span>
+                </label>
+                <label class="checkbox-label" for="cfg-subtle">
+                  <input type="checkbox" id="cfg-subtle" class="visually-hidden" checked>
+                  <span>Feedback Sonoro Sutil em cada passo concluído</span>
+                </label>
+              </div>
+
+              <button type="submit" class="primary">💾 Aplicar Configurações no Celular via ADB</button>
+            </form>
+          </div>
+
+          <div class="card">
+            <h2>🌐 Acesso Externo (PM2 + Cloudflare Tunnel)</h2>
+            <p class="metric-sub" style="margin-bottom: 0.85rem;">
+              Este painel roda localmente na porta <code class="inline">3028</code> e está integrado ao ecossistema PM2 + Cloudflare Tunnel da <strong>sua organização</strong>.
+            </p>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Serviço / Rota</th>
+                    <th>Endereço / Comando</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th scope="row" data-label="Serviço">URL Pública Cloudflare</th>
+                    <td data-label="Endereço"><a href="https://xzero.example.com" target="_blank" rel="noopener" style="color:var(--accent-cyan);">https://xzero.example.com</a></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" data-label="Serviço">URL Local Direta</th>
+                    <td data-label="Endereço"><code class="inline">http://127.0.0.1:3028</code></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" data-label="Serviço">Processo Backend PM2</th>
+                    <td data-label="Endereço"><code class="inline">xzero-dashboard</code></td>
+                  </tr>
+                  <tr>
+                    <th scope="row" data-label="Serviço">Processo Tunnel PM2</th>
+                    <td data-label="Endereço"><code class="inline">tunnel-xzero</code> (<code class="inline">~/.cloudflared/xzero_config.yml</code>)</td>
+                  </tr>
+                  <tr>
+                    <th scope="row" data-label="Serviço">Repositório Oficial X0 / X-Zero</th>
+                    <td data-label="Endereço"><a href="https://github.com/<seu-usuario>/xzero-agent" target="_blank" rel="noopener" style="color:var(--accent-cyan);"><seu-usuario>/xzero-agent</a></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <h3 style="margin-top: 1.25rem; margin-bottom: 0.6rem;">📲 Backup, Download APK & Restauração Completa (1-Click)</h3>
+            <p class="metric-sub" style="margin-bottom: 0.75rem;">
+              Baixe o APK direto para instalar ou use a restauração automática para reinstalar o app, permissões, Grafo Vetorial, Política Q(s,a), Vigias e MCPs no celular:
+            </p>
+            <div style="display:flex; flex-wrap:wrap; gap:0.6rem;">
+              <a href="/api/download-apk" class="btn cyan" style="text-decoration:none;">⬇️ Baixar APK (xzero-v3-latest.apk)</a>
+              <button type="button" id="btn-backup-now">💾 Salvar Backup Cognitivo</button>
+              <button type="button" class="primary" id="btn-restore-now">📲 Restaurar & Instalar no Celular</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Conectores MCP & Memória Curta Contínua -->
+        <div class="grid-2" style="margin-top: 1.25rem;">
+          <div class="card">
+            <h2>
+              <span>🔌 Conectores MCP (Model Context Protocol)</span>
+              <button type="button" id="btn-connect-host-mcp">⚡ Conectar MCP Host Demo</button>
+            </h2>
+            <form id="form-add-mcp" style="margin-bottom: 1rem;">
+              <div class="form-grid">
+                <div class="field">
+                  <label for="mcp-name">Nome do Servidor MCP</label>
+                  <input type="text" id="mcp-name" placeholder="Ex: host-mcp, github-mcp, n8n" required>
+                </div>
+                <div class="field">
+                  <label for="mcp-url">URL JSON-RPC / SSE do MCP</label>
+                  <input type="url" id="mcp-url" placeholder="https://xzero.example.com/api/mcp-demo" required>
+                </div>
+                <div class="field">
+                  <label for="mcp-token">Token Bearer (Opcional)</label>
+                  <input type="password" id="mcp-token" placeholder="Opcional">
+                </div>
+              </div>
+              <button type="submit" class="primary">➕ Conectar Servidor MCP & Descobrir Tools</button>
+            </form>
+            <div class="table-container">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Servidor MCP</th>
+                    <th>URL</th>
+                    <th>Status & Tools Descobertas</th>
+                  </tr>
+                </thead>
+                <tbody id="mcp-tbody">
+                  <tr><td colspan="3">Carregando servidores MCP...</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="card">
+            <h2>
+              <span>🎙️ Memória Curta de Voz & Script de Intenção Contínua</span>
+              <button type="button" id="btn-refresh-ambient">🔄 Atualizar</button>
+            </h2>
+            <div id="ambient-status-box" class="log-stream" style="min-height: 190px;">
+              Carregando estado da memória curta de transcrição e pontuação de intenção...
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <div class="status-toast" id="toast"></div>
+
+  <script>
+    // 1. Xenon 8x11 Spritesheet Header Animation (Idle Row 0, 8 frames)
+    (function initXenonAvatar() {
+      const el = document.getElementById('xenon-sprite');
+      let frame = 0;
+      // Animação decorativa a 7 fps: não há motivo para repintar com a aba oculta.
+      setInterval(() => {
+        if (document.hidden) return;
+        frame = (frame + 1) % 8;
+        const pctX = (frame / 7) * 100;
+        el.style.backgroundPosition = `${pctX.toFixed(2)}% 0%`;
+      }, 140);
+    })();
+
+    // 2. Theme Toggle
+    document.getElementById('btn-theme-toggle').addEventListener('click', () => {
+      const root = document.documentElement;
+      const next = root.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+      root.setAttribute('data-theme', next);
+      try { localStorage.setItem('xzero-theme', next); } catch (e) {}
+    });
+
+    // 3. Accessible Tabs with Keyboard Navigation & hidden="until-found"
+    class Tabs {
+      constructor(container) {
+        this.container = container;
+        this.tablist = container.querySelector('[role="tablist"]');
+        this.tabs = Array.from(container.querySelectorAll('[role="tab"]'));
+        this.panels = Array.from(container.querySelectorAll('[role="tabpanel"]'));
+        this.init();
+      }
+      init() {
+        this.tablist.addEventListener('keydown', (e) => this.handleKeyDown(e));
+        this.tabs.forEach((tab) => {
+          tab.addEventListener('click', () => this.selectTab(tab, false));
+        });
+        // Pista de "tem mais à direita": a barra de rolagem está escondida e as 8 abas
+        // somam ~1984px em 327px visíveis no celular. Sem isso, 6 abas eram invisíveis.
+        this.scroller = this.container.querySelector('.tabs-scroller');
+        const updateOverflow = () => {
+          if (!this.scroller) return;
+          const restante = this.tablist.scrollWidth - this.tablist.clientWidth - this.tablist.scrollLeft;
+          this.scroller.style.setProperty('--tabs-overflow-end', restante > 8 ? '1' : '0');
+        };
+        this.tablist.addEventListener('scroll', updateOverflow, { passive: true });
+        window.addEventListener('resize', updateOverflow);
+        updateOverflow();
+        this.panels.forEach((panel) => {
+          panel.addEventListener('beforematch', () => {
+            const tab = this.container.querySelector(`[aria-controls="${panel.id}"]`);
+            if (tab) this.selectTab(tab, false);
+          });
+        });
+      }
+      selectTab(selectedTab, setFocus = true) {
+        this.tabs.forEach((tab) => {
+          const isSelected = tab === selectedTab;
+          tab.setAttribute('aria-selected', isSelected);
+          tab.setAttribute('tabindex', isSelected ? '0' : '-1');
+          const panel = this.container.querySelector(`#${tab.getAttribute('aria-controls')}`);
+          if (panel) {
+            if (isSelected) {
+              panel.removeAttribute('hidden');
+            } else {
+              panel.setAttribute('hidden', 'until-found');
+            }
+          }
+          if (isSelected) {
+            if (setFocus) tab.focus();
+            tab.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'nearest' });
+          }
+        });
+        // O painel só busca dados quando é realmente aberto (ver Scheduler abaixo).
+        document.dispatchEvent(new CustomEvent('xzero:tab', {
+          detail: { panelId: selectedTab.getAttribute('aria-controls') }
+        }));
+      }
+      handleKeyDown(e) {
+        const index = this.tabs.indexOf(document.activeElement);
+        if (index === -1) return;
+        let nextIndex = null;
+        if (e.key === 'ArrowRight') nextIndex = (index + 1) % this.tabs.length;
+        else if (e.key === 'ArrowLeft') nextIndex = (index - 1 + this.tabs.length) % this.tabs.length;
+        else if (e.key === 'Home') nextIndex = 0;
+        else if (e.key === 'End') nextIndex = this.tabs.length - 1;
+        if (nextIndex !== null) {
+          e.preventDefault();
+          this.selectTab(this.tabs[nextIndex], true);
+        }
+      }
+    }
+    document.querySelectorAll('.tabs-container').forEach((c) => new Tabs(c));
+
+    // Toast helper
+    function showToast(msg) {
+      const t = document.getElementById('toast');
+      t.textContent = msg;
+      t.style.display = 'block';
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => { t.style.display = 'none'; }, 4200);
+    }
+
+    function setBadge(id, text, cls) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      el.textContent = text;
+      el.className = 'badge ' + (cls || '');
+    }
+
+    /**
+     * `fetch` com prazo. Sem AbortController, um shell ADB preso deixava a promessa
+     * pendurada e o painel parecia "carregando" para sempre, sem nunca errar.
+     */
+    async function fetchComPrazo(url, opcoes = {}, prazoMs = 14000) {
+      const ctrl = new AbortController();
+      const corte = setTimeout(() => ctrl.abort(), prazoMs);
+      try {
+        return await fetch(url, { ...opcoes, signal: ctrl.signal });
+      } finally {
+        clearTimeout(corte);
+      }
+    }
+
+    // 4. Load Overview & Telemetry
+    // Devolve o estado lido para o agendador decidir a próxima cadência.
+    async function loadOverview(heal = false) {
+      try {
+        const res = await fetchComPrazo(`/api/overview?heal=${heal ? 'true' : 'false'}`);
+        const data = await res.json();
+        if (!data.connected) {
+          setBadge('adb-status-badge', 'ADB Desconectado', 'err');
+          setBadge('health-overall-pill', 'Offline', 'err');
+          return data;
+        }
+        setBadge('adb-status-badge', `ADB ${data.adb.transport.toUpperCase()} (${data.adb.serial})`, 'ok');
+
+        const h = data.health || {};
+        const dev = h.device || {};
+        const srv = h.services || {};
+        const ag = h.agent || {};
+        const sen = h.sensors || {};
+
+        setBadge('agent-state-badge', ag.busy ? `Executando: ${ag.step}` : 'Pronto (Idle)', ag.busy ? 'warn' : 'purple');
+        setBadge('health-overall-pill', h.healthy ? '100% Saudável' : 'Atenção Requerida', h.healthy ? 'ok' : 'warn');
+
+        document.getElementById('metric-battery').textContent =
+          (dev.battery_pct !== undefined ? dev.battery_pct : '--') + '%' + (dev.charging ? ' ⚡' : '');
+        document.getElementById('metric-temp').textContent =
+          `Temperatura: ${dev.temp_c !== undefined ? dev.temp_c : '--'}°C | Rede: ${dev.network || '--'}`;
+
+        document.getElementById('metric-ram').textContent =
+          `${dev.ram_avail_mb || '--'} / ${dev.ram_total_mb || '--'} MB`;
+        document.getElementById('metric-uptime').textContent =
+          `Uptime: ${dev.uptime_min || '--'} min | Auto-Heals: ${h.recovery_count || 0}`;
+
+        const luxVal = sen.ambient_lux !== undefined && sen.ambient_lux >= 0 ? Math.round(sen.ambient_lux) + ' lux' : 'Ativo';
+        document.getElementById('metric-lux').textContent = luxVal;
+        document.getElementById('metric-motion').textContent = `Movimento: ${sen.motion_state || 'estável'}`;
+
+        document.getElementById('metric-graph').textContent = `${data.memoryStats.edges} relações`;
+        document.getElementById('metric-watches').textContent =
+          `${data.watches.length} vigias | ${data.memoryStats.routes} rotas campeãs`;
+
+        setBadge('srv-bubble', srv.bubble ? 'Ativo' : 'Inativo', srv.bubble ? 'ok' : 'err');
+        setBadge('srv-a11y', srv.accessibility ? 'Conectado' : 'Desativado', srv.accessibility ? 'ok' : 'err');
+        setBadge('srv-notif', srv.notifications ? 'Monitorando' : 'Inativo', srv.notifications ? 'ok' : 'warn');
+        setBadge('srv-rec', sen.is_recording ? '🔴 Gravando .m4a' : 'Standby', sen.is_recording ? 'warn' : 'ok');
+        setBadge('srv-wake', srv.wake_word_enabled ? 'Ativo + Shake' : 'Desligado', srv.wake_word_enabled ? 'ok' : 'warn');
+        setBadge('srv-llm', `${(ag.primary_llm || 'gemini').toUpperCase()} (${ag.gemini_model || 'flash'})`, 'purple');
+
+        // Sync config fields
+        if (ag.primary_llm) document.getElementById('cfg-primary').value = ag.primary_llm;
+        if (ag.gemini_model) document.getElementById('cfg-gemini-model').value = ag.gemini_model;
+        if (ag.claude_model) document.getElementById('cfg-claude-model').value = ag.claude_model;
+        if (ag.openai_model) document.getElementById('cfg-openai-model').value = ag.openai_model;
+        if (srv.wake_word_enabled !== undefined) document.getElementById('cfg-wake').checked = srv.wake_word_enabled;
+        if (srv.speak_enabled !== undefined) document.getElementById('cfg-speak').checked = srv.speak_enabled;
+        if (srv.subtle_sound_enabled !== undefined) document.getElementById('cfg-subtle').checked = srv.subtle_sound_enabled;
+        return data;
+      } catch (e) {
+        console.error(e);
+        return null;
+      }
+    }
+
+    // 5. Load Live Logs
+    async function loadLogs() {
+      try {
+        const res = await fetch('/api/logs?limit=150');
+        const data = await res.json();
+        const box = document.getElementById('logcat-box');
+        if (!data.logs || data.logs.length === 0) {
+          box.innerHTML = '<div class="log-line">Nenhum log recente em AgentePhone:I.</div>';
+          return;
+        }
+        box.innerHTML = data.logs.map((l) => {
+          const scoreBadge = l.score !== null
+            ? `<span class="badge ${l.score >= 1 ? 'ok' : 'warn'}">⭐ ${l.score >= 0 ? '+' : ''}${l.score}</span>`
+            : '';
+          return `<div class="log-line">
+            <span class="log-time">${l.time}</span>
+            <span>${escapeHtml(l.message)}</span>
+            ${scoreBadge}
+          </div>`;
+        }).join('');
+      } catch (e) {}
+    }
+
+    // 6. Load Trajectories
+    async function loadTrajectories() {
+      try {
+        const res = await fetch('/api/trajectories');
+        const data = await res.json();
+        const tbody = document.getElementById('trajectories-tbody');
+        if (!data.sessions || data.sessions.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="7">Nenhuma sessão encontrada.</td></tr>';
+          return;
+        }
+        tbody.innerHTML = data.sessions.map((s) => `
+          <tr>
+            <th scope="row" data-label="Sessão"><code class="inline">${escapeHtml(s.sessionId.replace('sess_', ''))}</code></th>
+            <td data-label="Objetivo"><strong>${escapeHtml(s.task)}</strong></td>
+            <td data-label="Passos">${s.stepsCount}</td>
+            <td data-label="Score RL"><span class="badge ${s.totalScore >= 2 ? 'ok' : 'purple'}">⭐ ${s.totalScore}</span></td>
+            <td data-label="Rota"><code class="inline">${escapeHtml(s.routeSummary || '-')}</code></td>
+            <td data-label="Resultado">${escapeHtml((s.answer || s.outcome || '').slice(0, 90))}</td>
+            <td data-label="Ação"><button type="button" onclick="inspectSession('${escapeHtml(s.sessionId)}')">🔍 Inspecionar</button></td>
+          </tr>
+        `).join('');
+      } catch (e) {}
+    }
+
+    window.inspectSession = async function (sessionId) {
+      try {
+        document.getElementById('selected-session-badge').textContent = sessionId;
+        const res = await fetch(`/api/trajectories/${encodeURIComponent(sessionId)}`);
+        const data = await res.json();
+        const box = document.getElementById('trajectory-steps-box');
+        if (!data.events || data.events.length === 0) {
+          box.textContent = 'Sem eventos nesta sessão.';
+          return;
+        }
+        box.innerHTML = data.events.map((ev) => {
+          if (ev.type === 'session_start') {
+            return `<div class="log-line"><span class="badge purple">START</span> <strong>Tarefa:</strong> ${escapeHtml(ev.data?.task || '')}</div>`;
+          }
+          if (ev.type === 'agent_step') {
+            const d = ev.data || {};
+            return `<div class="log-line" style="flex-direction:column; gap:0.25rem; padding:0.5rem 0;">
+              <div><span class="badge ok">Passo #${d.step}</span> <strong>Ação:</strong> <code class="inline">${escapeHtml(d.action)}</code> <span style="color:#94a3b8;">(${escapeHtml(JSON.stringify(d.args || {}))})</span></div>
+              <div><strong>Plano:</strong> ${escapeHtml(d.plan || '-')}</div>
+              <div><strong>Pensamento:</strong> ${escapeHtml(d.thought || '-')}</div>
+              <div><strong>Resultado & Score:</strong> <span style="color:#34d399;">${escapeHtml(d.result || '')}</span></div>
+            </div>`;
+          }
+          if (ev.type === 'session_end') {
+            return `<div class="log-line"><span class="badge ok">END (${escapeHtml(ev.data?.outcome || '')})</span> <strong>Resposta Final:</strong> ${escapeHtml(ev.data?.answer || '')}</div>`;
+          }
+          return '';
+        }).join('');
+      } catch (e) {}
+    };
+
+    // 7. Load Knowledge Graph & Watches
+    async function loadMemoryAndWatches() {
+      try {
+        const [memRes, watchRes] = await Promise.all([fetch('/api/memory'), fetch('/api/watches')]);
+        const mem = await memRes.json();
+        const watchData = await watchRes.json();
+
+        const watches = watchData.watches || [];
+        const recentEvents = watchData.recentEvents || [];
+        document.getElementById('watches-count-badge').textContent = `${watches.length} ativas`;
+        const isUnlockWatch = (w) => ['unlock', 'device', 'desbloqueio', 'sistema'].includes(String(w.source || '').toLowerCase()) || String(w.instruction || '').toLowerCase().includes('desbloque');
+        const isRecurringWatch = (w) => /sempre|toda vez|todo dia|diariamente/i.test(String(w.instruction || ''));
+        const unlockCount = watches.filter(isUnlockWatch).length;
+        const recurringCount = watches.filter(isRecurringWatch).length;
+        const singleCount = watches.length - recurringCount;
+        document.getElementById('watches-stat-total').textContent = String(watches.length);
+        document.getElementById('watches-stat-unlock').textContent = String(unlockCount);
+        document.getElementById('watches-stat-apps').textContent = String(watches.length - unlockCount);
+        document.getElementById('watches-stat-mode').textContent = `${singleCount} / ${recurringCount}`;
+
+        const wTbody = document.getElementById('watches-tbody');
+        wTbody.innerHTML = watches.length === 0
+          ? '<tr><td colspan="6">Nenhuma vigia ativa no momento. Adicione acima ou peça por voz ao Ada / Xenon!</td></tr>'
+          : watches.map((w) => {
+              const rec = isRecurringWatch(w);
+              const srcLabel = isUnlockWatch(w) ? '🔓 ' + w.source : w.source;
+              return `
+              <tr>
+                <th scope="row" data-label="ID"><code class="inline">${escapeHtml(w.id)}</code></th>
+                <td data-label="Gatilho"><span class="badge purple">${escapeHtml(srcLabel)}</span></td>
+                <td data-label="Modo"><span class="badge ${rec ? 'ok' : 'warn'}">${rec ? '🔁 Recorrente' : '⚡ Único'}</span></td>
+                <td data-label="Filtro"><strong>${escapeHtml(w.filter)}</strong></td>
+                <td data-label="Instrução">${escapeHtml(w.instruction)}</td>
+                <td data-label="Remover"><button type="button" class="danger" onclick="deleteWatch('${escapeHtml(w.id)}')">🗑️ Remover</button></td>
+              </tr>`;
+            }).join('');
+
+        document.getElementById('watches-events-badge').textContent = `${recentEvents.length} eventos`;
+        const evTbody = document.getElementById('watches-events-tbody');
+        evTbody.innerHTML = recentEvents.length === 0
+          ? '<tr><td colspan="3">Nenhum disparo recente de vigia nas trajetórias.</td></tr>'
+          : recentEvents.map((ev) => {
+              const dt = ev.started_at ? new Date(ev.started_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '--:--';
+              const ok = ev.outcome === 'success';
+              return `
+              <tr>
+                <td data-label="Hora"><code class="inline">${escapeHtml(dt)}</code></td>
+                <td data-label="Status"><span class="badge ${ok ? 'ok' : 'warn'}">${escapeHtml(ev.outcome)}</span></td>
+                <td data-label="Detalhe">
+                  <div style="font-size:0.82rem; color: var(--text-muted);">${escapeHtml(String(ev.task || '').slice(0, 120))}</div>
+                  <div style="margin-top:0.2rem;"><strong>${escapeHtml(String(ev.answer || 'Em andamento').slice(0, 140))}</strong></div>
+                </td>
+              </tr>`;
+            }).join('');
+
+        const edges = mem.edges || [];
+        document.getElementById('edges-count-badge').textContent = `${edges.length} arestas`;
+        const eTbody = document.getElementById('edges-tbody');
+        eTbody.innerHTML = edges.length === 0
+          ? '<tr><td colspan="5">Nenhuma aresta no grafo.</td></tr>'
+          : edges.map((e, idx) => `
+              <tr>
+                <th scope="row" data-label="Entidade">${escapeHtml(e.s)}</th>
+                <td data-label="Relação"><code class="inline">${escapeHtml(e.r)}</code></td>
+                <td data-label="Alvo">${escapeHtml(e.t)}</td>
+                <td data-label="Peso"><span class="badge ok">${Number(e.w || 1).toFixed(1)}</span></td>
+                <td data-label="Ação"><button type="button" class="danger" data-s="${escapeHtml(e.s)}" data-r="${escapeHtml(e.r)}" data-t="${escapeHtml(e.t)}" onclick="deleteEdgeBtn(this)">✕</button></td>
+              </tr>
+            `).join('');
+
+        const qPolicy = mem.qPolicy || [];
+        const qpBadge = document.getElementById('qpolicy-count-badge');
+        if (qpBadge) qpBadge.textContent = `${qPolicy.length} pares (s,a)`;
+        const qpTbody = document.getElementById('qpolicy-tbody');
+        if (qpTbody) {
+          qpTbody.innerHTML = qPolicy.length === 0
+            ? '<tr><td colspan="5">Nenhum par Q(s,a) registrado ainda.</td></tr>'
+            : qPolicy.sort((a, b) => (b.q || 0) - (a.q || 0)).map((p) => `
+                <tr>
+                  <th scope="row" data-label="Estado (s)"><code class="inline">${escapeHtml(p.sk)}</code></th>
+                  <td data-label="Ação (a)"><span class="badge purple">${escapeHtml(p.a)}</span></td>
+                  <td data-label="Valor Q(s,a)"><span class="badge ${(p.q || 0) >= 1.5 ? 'ok' : 'warn'}">${Number(p.q || 0) >= 0 ? '+' : ''}${Number(p.q || 0).toFixed(2)}</span></td>
+                  <td data-label="Visitas">${p.v || 1}x</td>
+                  <td data-label="Vitórias Verificadas">✅ ${p.w || 0}</td>
+                </tr>
+              `).join('');
+        }
+
+        const routes = mem.routes || [];
+        const rTbody = document.getElementById('routes-tbody');
+        rTbody.innerHTML = routes.length === 0
+          ? '<tr><td colspan="4">Nenhuma rota campeã consolidada ainda.</td></tr>'
+          : routes.map((r) => `
+              <tr>
+                <th scope="row" data-label="Intenção">${escapeHtml(r.i)}</th>
+                <td data-label="Sequência"><code class="inline">${escapeHtml(r.s)}</code></td>
+                <td data-label="Score Médio"><span class="badge ok">⭐ ${Number(r.sc || 0).toFixed(1)}</span></td>
+                <td data-label="Execuções">${r.u || 1}x</td>
+              </tr>
+            `).join('');
+      } catch (e) {}
+    }
+
+    window.deleteWatch = async function (id) {
+      await fetch(`/api/watches/${encodeURIComponent(id)}`, { method: 'DELETE' });
+      showToast(`Vigia ${id} removida.`);
+      loadMemoryAndWatches();
+      loadOverview(false);
+    };
+
+    window.deleteEdgeBtn = async function (btn) {
+      await fetch('/api/memory/edge', {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          s: btn.getAttribute('data-s'),
+          r: btn.getAttribute('data-r'),
+          t: btn.getAttribute('data-t')
+        })
+      });
+      showToast('Aresta removida do Grafo.');
+      loadMemoryAndWatches();
+    };
+
+    // 8. Load 28 Tools Catalog
+    let allTools = [];
+    async function loadTools() {
+      const res = await fetch('/api/tools');
+      const data = await res.json();
+      allTools = data.tools || [];
+      renderTools('');
+    }
+
+    function renderTools(query) {
+      const q = (query || '').toLowerCase().trim();
+      const filtered = allTools.filter((t) =>
+        !q ||
+        t.name.toLowerCase().includes(q) ||
+        t.category.toLowerCase().includes(q) ||
+        t.description.toLowerCase().includes(q)
+      );
+      const tbody = document.getElementById('tools-tbody');
+      tbody.innerHTML = filtered.map((t) => `
+        <tr>
+          <th scope="row" data-label="Tool"><code class="inline">${escapeHtml(t.name)}</code></th>
+          <td data-label="Categoria"><span class="badge purple">${escapeHtml(t.category)}</span></td>
+          <td data-label="RL Score"><span class="badge ok">⭐ ${escapeHtml(t.scoreBase)}</span></td>
+          <td data-label="Descrição">${escapeHtml(t.description)}</td>
+          <td data-label="Payload"><code class="inline">${escapeHtml(JSON.stringify(t.params))}</code></td>
+          <td data-label="Testar"><button type="button" data-prompt="${escapeHtml(t.samplePrompt)}" onclick="runSamplePrompt(this)">▶️ Testar</button></td>
+        </tr>
+      `).join('');
+    }
+
+    document.getElementById('tools-search').addEventListener('input', (e) => renderTools(e.target.value));
+
+    window.runSamplePrompt = function (btn) {
+      const prompt = btn.getAttribute('data-prompt');
+      document.getElementById('quick-ask-input').value = prompt;
+      dispatchAction('ask', { text: prompt });
+    };
+
+    // 9. Action Dispatchers
+    async function dispatchAction(type, payload = {}) {
+      try {
+        showToast(`Enviando ação [${type.toUpperCase()}] ao XZERO...`);
+        const res = await fetch('/api/action', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ type, ...payload })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          showToast(`Erro: ${data.error || 'Falha ao executar'}`);
+          return;
+        }
+        showToast(`✅ ${type.toUpperCase()}: ${typeof data.response === 'object' ? 'Executado com sucesso' : data.response}`);
+        // Recarrega o painel aberto (e não os 3 fixos de antes, que buscavam dados de
+        // abas fechadas); dá 1,2s para o aparelho aplicar o efeito da ação.
+        setTimeout(() => window.XzeroScheduler && window.XzeroScheduler.atualizarAgora(), 1200);
+      } catch (e) {
+        showToast('Erro de comunicação com o servidor.');
+      }
+    }
+
+    document.getElementById('quick-ask-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      const input = document.getElementById('quick-ask-input');
+      const text = input.value.trim();
+      if (!text) return;
+      dispatchAction('ask', { text });
+    });
+
+    document.getElementById('btn-listen').addEventListener('click', () => dispatchAction('listen'));
+    document.getElementById('btn-send-btw').addEventListener('click', () => {
+      const input = document.getElementById('quick-ask-input');
+      const text = input.value.trim();
+      if (!text) {
+        showToast('Digite o contexto paralelo no campo antes de clicar em /btw!');
+        return;
+      }
+      dispatchAction('btw', { text });
+      input.value = '';
+    });
+    document.getElementById('btn-heal').addEventListener('click', () => loadOverview(true).then(() => showToast('🩺 Healthcheck & Self-Healing executados!')));
+    document.getElementById('btn-adb-wifi').addEventListener('click', () => dispatchAction('adb_wifi'));
+    document.getElementById('btn-recover').addEventListener('click', () => dispatchAction('recover'));
+    document.getElementById('btn-record-start').addEventListener('click', () => dispatchAction('ask', { text: 'Inicie a gravação de áudio ambiente agora usando start_recording e me avise' }));
+    document.getElementById('btn-record-stop').addEventListener('click', () => dispatchAction('ask', { text: 'Pare a gravação de áudio agora usando stop_recording e me diga onde salvou' }));
+
+    document.getElementById('btn-refresh-screen').addEventListener('click', () => {
+      document.getElementById('live-screen-img').src = '/api/screen?t=' + Date.now();
+    });
+
+    document.getElementById('btn-refresh-logs').addEventListener('click', loadLogs);
+    document.getElementById('btn-refresh-trajectories').addEventListener('click', loadTrajectories);
+
+    document.getElementById('form-add-watch').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const body = {
+        source: document.getElementById('watch-source').value,
+        filter: document.getElementById('watch-filter').value,
+        instruction: document.getElementById('watch-instruction').value,
+        autoOpen: document.getElementById('watch-autoopen').checked
+      };
+      await fetch('/api/watches', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      document.getElementById('watch-filter').value = '';
+      showToast('👁️ Nova vigia proativa ativada!');
+      loadMemoryAndWatches();
+      loadOverview(false);
+    });
+
+    document.getElementById('form-add-edge').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const body = {
+        subject: document.getElementById('edge-subject').value,
+        relation: document.getElementById('edge-relation').value,
+        target: document.getElementById('edge-target').value
+      };
+      await fetch('/api/memory/edge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      document.getElementById('edge-subject').value = '';
+      document.getElementById('edge-relation').value = '';
+      document.getElementById('edge-target').value = '';
+      showToast('🧠 Nova aresta adicionada ao Grafo Vetorial!');
+      loadMemoryAndWatches();
+      loadOverview(false);
+    });
+
+    document.getElementById('form-config').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const body = {
+        primary: document.getElementById('cfg-primary').value,
+        gemini_model: document.getElementById('cfg-gemini-model').value,
+        gemini_key: document.getElementById('cfg-gemini-key').value,
+        claude_model: document.getElementById('cfg-claude-model').value,
+        claude_key: document.getElementById('cfg-claude-key').value,
+        openai_model: document.getElementById('cfg-openai-model').value,
+        openai_key: document.getElementById('cfg-openai-key').value,
+        wake_word: document.getElementById('cfg-wake').checked,
+        speak: document.getElementById('cfg-speak').checked,
+        subtle_sound: document.getElementById('cfg-subtle').checked
+      };
+      const res = await fetch('/api/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      showToast(`⚙️ Configuração aplicada: ${data.response || 'OK'}`);
+      loadOverview(false);
+    });
+
+    function escapeHtml(str) {
+      return String(str || '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    async function loadAmbientAndMcp() {
+      try {
+        const res = await fetch('/api/ambient');
+        const data = await res.json();
+        const mcpTbody = document.getElementById('mcp-tbody');
+        const servers = (data.mcp && Array.isArray(data.mcp.servers)) ? data.mcp.servers : [];
+        if (servers.length === 0) {
+          mcpTbody.innerHTML = '<tr><td colspan="3">Nenhum servidor MCP conectado. Clique em "⚡ Conectar MCP Host Demo" ou adicione uma URL acima.</td></tr>';
+        } else {
+          mcpTbody.innerHTML = servers.map((s) => {
+            const tools = Array.isArray(s.tools) && s.tools.length > 0
+              ? s.tools.map((t) => `<code class="inline">${escapeHtml(t.name)}</code>`).join(', ')
+              : 'Nenhuma tool listada';
+            return `<tr>
+              <th scope="row" data-label="Servidor">${escapeHtml(s.name)}</th>
+              <td data-label="URL"><code class="inline">${escapeHtml(s.url)}</code></td>
+              <td data-label="Status"><span class="badge ok">${escapeHtml(s.last_status || 'ativo')}</span><br>${tools}</td>
+            </tr>`;
+          }).join('');
+        }
+
+        const ambBox = document.getElementById('ambient-status-box');
+        if (data.ambient) {
+          const a = data.ambient;
+          const chunksHtml = Array.isArray(a.chunks) && a.chunks.length > 0
+            ? a.chunks.map((c) => `[${escapeHtml(c.time)}] "${escapeHtml(c.text)}" (score=+${c.score}, ${escapeHtml(c.reason)})`).join('\n')
+            : '(Memória curta limpa / aguardando fala)';
+          ambBox.textContent =
+            `Pontuação de Intenção Atual: ${Number(a.rolling_intent_score || 0).toFixed(2)} / Limiar: ${a.auto_intent_threshold || 7.5}\n` +
+            `Janela da Memória Curta: ${a.memory_window_sec || 45}s (${a.buffered_chunks_count || 0} trechos)\n` +
+            `Prioridade de Microfone Cedida ao usuário: ${a.user_mic_priority_yielded ? 'SIM (outro app usando mic)' : 'NÃO (XZERO escutando)'}\n` +
+            `Contexto /btw em espera: ${JSON.stringify(a.idle_btw_buffer || [])}\n\n` +
+            `Trechos Recentes na Memória Curta:\n${chunksHtml}`;
+        }
+      } catch (e) {}
+    }
+
+    document.getElementById('form-add-mcp').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const body = {
+        op: 'add',
+        name: document.getElementById('mcp-name').value.trim(),
+        url: document.getElementById('mcp-url').value.trim(),
+        token: document.getElementById('mcp-token').value.trim()
+      };
+      const res = await fetch('/api/mcp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      const data = await res.json();
+      showToast(`🔌 ${data.response || 'Servidor MCP conectado!'}`);
+      loadAmbientAndMcp();
+    });
+
+    document.getElementById('btn-connect-host-mcp').addEventListener('click', async () => {
+      const res = await fetch('/api/mcp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          op: 'add',
+          name: 'host-mcp',
+          url: 'https://xzero.example.com/api/mcp-demo'
+        })
+      });
+      const data = await res.json();
+      showToast(`⚡ ${data.response || 'MCP Host conectado!'}`);
+      loadAmbientAndMcp();
+    });
+
+    document.getElementById('btn-refresh-ambient').addEventListener('click', loadAmbientAndMcp);
+
+    document.getElementById('btn-backup-now').addEventListener('click', async () => {
+      showToast('💾 Gerando backup cognitivo completo...');
+      const res = await fetch('/api/backup', { method: 'POST' });
+      const data = await res.json();
+      showToast(data.ok ? '✅ Backup completo salvo em /backups!' : `❌ Erro: ${data.error}`);
+    });
+
+    document.getElementById('btn-restore-now').addEventListener('click', async () => {
+      showToast('📲 Instalando APK, permissões e restaurando memória no celular...');
+      const res = await fetch('/api/restore', { method: 'POST' });
+      const data = await res.json();
+      showToast(data.ok ? '✅ XZERO v3 restaurado e instalado com sucesso!' : `❌ Erro: ${data.error}`);
+    });
+
+    async function loadEnergyTelemetry() {
+      try {
+        const res = await fetch('/api/energy');
+        const data = await res.json();
+        if (!data.connected) return;
+
+        const b = data.battery || {};
+        document.getElementById('energy-level').textContent = b.level != null ? `${b.level}%` : '--%';
+        document.getElementById('energy-temp').textContent =
+          `${b.temperatureC != null ? b.temperatureC.toFixed(1) : '--'} °C • Fonte: ${b.source || 'Bateria'} (${b.voltageMv || '--'} mV)`;
+        document.getElementById('energy-drain').textContent =
+          b.computedDrainMah != null ? `${b.computedDrainMah} mAh` : '-- mAh';
+        document.getElementById('energy-cap').textContent =
+          `Capacidade: ${b.capacityMah || '--'} mAh (${b.dischargePct ?? '--'}% descarregado)`;
+
+        const subs = data.subsystems || [];
+        const sensSub = subs.find((s) => s.name === 'sensors');
+        document.getElementById('energy-sensors-mah').textContent = sensSub ? `${sensSub.mah} mAh` : '0 mAh';
+        const hwSensors = data.activeSensors || [];
+        document.getElementById('energy-sensors-active').textContent = `${hwSensors.length} sensores ativos no hardware`;
+
+        const sc = data.sensorConfig || {};
+        document.getElementById('energy-sensor-mode').textContent =
+          `${String(sc.mode || 'normal').toUpperCase()} • ${sc.auto_silent ? 'Auto-Silêncio' : 'Sempre Ativo'}`;
+        const sl = sc.sensors_list || [];
+        const activeCount = sl.filter((s) => s.enabled).length;
+        const badgeEl = document.getElementById('energy-x0-sensors-badge');
+        if (badgeEl) badgeEl.textContent = `${activeCount}/${sl.length} ativos`;
+        const listEl = document.getElementById('energy-x0-sensors-list');
+        if (listEl) {
+          listEl.innerHTML = sl.length === 0
+            ? 'Sem status detalhado de sensores.'
+            : sl.map((s) => `
+              <div style="display:flex; justify-content:space-between; align-items:center; gap:0.75rem; padding:0.55rem 0; border-bottom:1px solid rgba(255,255,255,0.06);">
+                <div>
+                  <div>
+                    <span class="badge ${s.enabled ? 'ok' : 'warn'}">${s.enabled ? '🟢 ATIVO' : '⚪ DESLIGADO'}</span>
+                    <strong style="margin-left:0.4rem;">${escapeHtml(s.label)}</strong>
+                    <span class="badge ${s.critical ? 'purple' : ''}" style="margin-left:0.35rem;">${s.critical ? 'Crítico' : 'Não-crítico'}</span>
+                  </div>
+                  <div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.2rem;">${escapeHtml(s.purpose)}</div>
+                </div>
+                <button type="button" class="${s.enabled ? 'danger' : 'primary'}" onclick="setSensorPowerConfig({ '${escapeHtml(s.key)}': ${!s.enabled} })">${s.enabled ? 'Desligar' : 'Ligar'}</button>
+              </div>`).join('');
+        }
+
+        const maxSub = Math.max(1, ...subs.map((s) => s.mah || 0));
+        const subLabels = {
+          screen: '📱 Tela', cpu: '🧠 CPU', wifi: '📶 Wi-Fi', sensors: '🧭 Sensores',
+          camera: '📷 Câmera', mobile_radio: '📡 Rádio 4G/5G', gnss: '📍 GPS / GNSS',
+          wakelock: '🔒 Wakelock', system_services: '⚙️ Serviços Sistema', idle: '💤 Ocioso'
+        };
+        document.getElementById('energy-subsystems-list').innerHTML = subs.length === 0
+          ? 'Sem dados de subsistema.'
+          : subs.map((s) => {
+              const pct = Math.min(100, Math.round((s.mah / maxSub) * 100));
+              return `
+                <div style="margin-bottom:0.65rem;">
+                  <div style="display:flex; justify-content:space-between; font-size:0.86rem; margin-bottom:0.2rem;">
+                    <span>${escapeHtml(subLabels[s.name] || s.name)} ${s.duration ? `<span style="color:var(--text-muted)">(${escapeHtml(s.duration)})</span>` : ''}</span>
+                    <strong>${s.mah} mAh</strong>
+                  </div>
+                  <div style="height:7px; background:rgba(255,255,255,0.08); border-radius:4px; overflow:hidden;">
+                    <div style="width:${pct}%; height:100%; background:linear-gradient(90deg,#7c3aed,#38bdf8);"></div>
+                  </div>
+                </div>`;
+            }).join('');
+
+        const tools = data.tools || [];
+        document.getElementById('energy-tools-badge').textContent = `${tools.length} tools`;
+        document.getElementById('energy-tools-tbody').innerHTML = tools.length === 0
+          ? '<tr><td colspan="5">Nenhuma execução registrada recentemente.</td></tr>'
+          : tools.map((t) => {
+              const cls = t.level.includes('Alto') ? 'bad' : (t.level.includes('Médio') ? 'warn' : 'ok');
+              return `<tr>
+                <th scope="row"><code class="inline">${escapeHtml(t.action)}</code></th>
+                <td>${t.calls}x</td>
+                <td><span class="badge ${cls}">${escapeHtml(t.level)}</span></td>
+                <td><strong>${t.score}</strong></td>
+                <td style="font-size:0.82rem; color:var(--text-muted);">${escapeHtml(t.reason)}</td>
+              </tr>`;
+            }).join('');
+
+        const apps = data.apps || [];
+        document.getElementById('energy-apps-badge').textContent = `${apps.length} apps`;
+        document.getElementById('energy-apps-tbody').innerHTML = apps.length === 0
+          ? '<tr><td colspan="6">Nenhum dado por app disponível.</td></tr>'
+          : apps.map((a) => {
+              const netCam = Number((a.cameraMah + a.wifiMah + a.mobileMah + a.gnssMah).toFixed(2));
+              return `<tr style="${a.isX0 ? 'background:rgba(124,58,237,0.16);' : ''}">
+                <th scope="row" style="max-width:220px; word-break:break-word;">
+                  ${a.isX0 ? '🤖 ' : ''}${escapeHtml(a.packageName)}
+                  <div style="font-size:0.75rem; color:var(--text-muted);">${escapeHtml(a.uid)}</div>
+                </th>
+                <td><strong>${a.totalMah} mAh</strong></td>
+                <td>${a.screenMah}</td>
+                <td>${a.cpuMah}</td>
+                <td>${a.sensorsMah}${a.sensorsDuration ? `<div style="font-size:0.72rem;color:var(--text-muted);">${escapeHtml(a.sensorsDuration)}</div>` : ''}</td>
+                <td>${netCam}</td>
+              </tr>`;
+            }).join('');
+
+        document.getElementById('energy-hw-badge').textContent = String(hwSensors.length);
+        document.getElementById('energy-hw-list').innerHTML = hwSensors.length === 0
+          ? 'Nenhum sensor ativo reportado.'
+          : hwSensors.map((s) => `<div style="padding:0.4rem 0.5rem; border-bottom:1px solid rgba(255,255,255,0.06);">🧭 ${escapeHtml(s)}</div>`).join('');
+      } catch (e) {}
+    }
+
+    async function setSensorPowerConfig(payload) {
+      const res = await fetch('/api/energy/sensors', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      showToast(data.ok ? `🔋 Configuração de sensores atualizada!` : `❌ ${data.error}`);
+      loadEnergyTelemetry();
+    }
+
+    async function setSensorPowerMode(mode) {
+      return setSensorPowerConfig({ mode });
+    }
+
+    async function loadMonitoring3030() {
+      try {
+        const res = await fetch('/api/monitoring3030');
+        const d = await res.json();
+        if (!d.connected) return;
+        const h = d.harness || {};
+        const stats = h.summary || h;
+        const rate = stats.success_rate_pct ?? stats.verified_rate_pct ?? '--';
+        document.getElementById('m3030-rate').textContent = rate !== '--' ? `${rate}%` : '--%';
+        document.getElementById('m3030-sessions').textContent = `${stats.total_sessions ?? '--'} sessões analisadas`;
+
+        const errs = (d.errors && d.errors.errors) || [];
+        document.getElementById('m3030-errors').textContent = String(errs.length);
+
+        const aud = d.audio || {};
+        const lv = aud.live || {};
+        document.getElementById('m3030-mic').textContent = aud.mic_state || '--';
+        document.getElementById('m3030-snr').textContent =
+          `SNR: ${lv.snr_db != null ? Number(lv.snr_db).toFixed(1) : '--'} dB | Piso: ${lv.noise_floor_dbfs != null ? Number(lv.noise_floor_dbfs).toFixed(1) : '--'} dBFS`;
+
+        const th = (d.thinking && d.thinking.thinking) || [];
+        document.getElementById('m3030-thinking-list').innerHTML = th.length === 0
+          ? 'Nenhum raciocínio em memória no momento.'
+          : th.slice(-20).reverse().map((item) => `
+              <div style="padding:0.45rem; border-bottom:1px solid rgba(255,255,255,0.06);">
+                <code class="inline">${escapeHtml(item.type || item.phase || 'step')}</code>
+                <span style="margin-left:0.35rem;">${escapeHtml(item.message || item.thought || JSON.stringify(item).slice(0, 140))}</span>
+              </div>`).join('');
+
+        document.getElementById('m3030-errors-list').innerHTML = errs.length === 0
+          ? '✅ Nenhum erro ativo registrado.'
+          : errs.slice(-20).reverse().map((e) => `
+              <div style="padding:0.45rem; border-bottom:1px solid rgba(255,255,255,0.06);">
+                <span class="badge bad">${escapeHtml(e.type || 'ERROR')}</span>
+                <strong style="margin-left:0.35rem;">${escapeHtml(e.actual || e.message || '')}</strong>
+                ${e.correction ? `<div style="font-size:0.8rem; color:var(--text-muted); margin-top:0.2rem;">🧭 ${escapeHtml(e.correction)}</div>` : ''}
+              </div>`).join('');
+
+        const recs = h.recommendations || h.insights || [];
+        document.getElementById('m3030-harness-box').innerHTML = Array.isArray(recs) && recs.length > 0
+          ? recs.map((r) => `<div style="margin-bottom:0.4rem;">• ${escapeHtml(typeof r === 'string' ? r : (r.summary || r.title || JSON.stringify(r)))}</div>`).join('')
+          : `<pre style="white-space:pre-wrap; font-size:0.82rem; color:var(--text-muted);">${escapeHtml(JSON.stringify(h, null, 2).slice(0, 1200))}</pre>`;
+      } catch (e) {}
+    }
+
+    /* ======================================================================
+       AGENDADOR DE COLETA
+       ----------------------------------------------------------------------
+       O que havia antes:
+         - as 8 cargas disparavam juntas ao abrir a página, mesmo as 7 de abas
+           fechadas. Cada uma vai ao aparelho por ADB, então abrir o painel
+           custava ~8 rajadas de shell de uma vez;
+         - /api/overview (4 shells ADB por resposta) era refeito a cada 4,5s
+           para sempre, inclusive com a aba do navegador em segundo plano e com
+           o agente parado;
+         - nenhuma proteção de requisição em voo: quando o ADB passava dos 4,5s
+           (o timeout do servidor é 12s), os pedidos empilhavam.
+
+       O aparelho monitorado estava com 6% de bateria durante esta análise, e a
+       coleta é por ADB sobre USB — o custo é real, não teórico.
+
+       O que passa a valer:
+         - cada aba carrega na PRIMEIRA vez que é aberta;
+         - só a aba visível é atualizada;
+         - a página oculta não coleta nada e recoleta ao voltar;
+         - a cadência segue o estado do agente: rápida quando ele está
+           trabalhando, lenta quando está ocioso.
+       Nada aqui bloqueia uma ação manual: os botões continuam disparando suas
+       próprias chamadas na hora, sem passar pelo agendador.
+       ====================================================================== */
+    const Scheduler = (() => {
+      const CADENCIA_ATIVA_MS = 3000;   // agente executando: queremos ver o passo a passo
+      const CADENCIA_OCIOSA_MS = 9000;  // agente idle: nada muda nesse ritmo
+      const CADENCIA_OFFLINE_MS = 15000; // sem ADB: só reconferir se voltou
+
+      // Carregadores por painel. `always` roda junto com o overview (estado global
+      // do cabeçalho), o resto só quando a aba está à vista.
+      const LOADERS = {
+        'panel-overview': [loadAmbientAndMcp],
+        'panel-observability': [loadTrajectories, loadLogs],
+        'panel-memory': [loadMemoryAndWatches],
+        'panel-watches': [loadMemoryAndWatches],
+        'panel-energy': [loadEnergyTelemetry],
+        'panel-mon3030': [loadMonitoring3030],
+        'panel-tools': [loadTools],
+        'panel-config': []
+      };
+
+      const jaCarregado = new Set();
+      let painelAtual = 'panel-overview';
+      let timer = null;
+      let emVoo = false;
+      let cadenciaAtual = CADENCIA_ATIVA_MS;
+
+      /* Guarda de requisição em voo. Sem isso, um ciclo mais lento que a cadência
+         fazia os pedidos se acumularem contra o mesmo aparelho. */
+      async function ciclo(ignorarVisibilidade = false) {
+        if (emVoo) return;
+        // A primeira coleta roda mesmo com a página oculta: um painel aberto numa aba de
+        // fundo precisa estar preenchido no instante em que o usuário olha para ele, em
+        // vez de mostrar "--" até o próximo ciclo. O que não queremos é o poll PERPÉTUO
+        // em segundo plano — esse continua bloqueado.
+        if (document.hidden && !ignorarVisibilidade) return;
+        emVoo = true;
+        try {
+          const estado = await loadOverview(false);
+          const autolog = document.getElementById('chk-autolog');
+          if (painelAtual === 'panel-observability' && autolog && autolog.checked) {
+            await loadLogs();
+          }
+          cadenciaAtual = proximaCadencia(estado);
+        } catch (e) {
+          cadenciaAtual = CADENCIA_OFFLINE_MS;
+        } finally {
+          emVoo = false;
+          reagendar();
+        }
+      }
+
+      function proximaCadencia(estado) {
+        if (!estado || !estado.connected) return CADENCIA_OFFLINE_MS;
+        const ag = (estado.health && estado.health.agent) || {};
+        const trabalhando = ag.busy === true || (ag.step && ag.step !== 'idle');
+        return trabalhando ? CADENCIA_ATIVA_MS : CADENCIA_OCIOSA_MS;
+      }
+
+      function reagendar() {
+        clearTimeout(timer);
+        if (document.hidden) return;
+        timer = setTimeout(ciclo, cadenciaAtual);
+      }
+
+      async function abrirPainel(panelId, forcar = false) {
+        painelAtual = panelId;
+        const loaders = LOADERS[panelId] || [];
+        if (!forcar && jaCarregado.has(panelId)) return;
+        jaCarregado.add(panelId);
+        // Sequencial de propósito: em paralelo, as cargas de uma aba competiriam
+        // pelo mesmo daemon ADB e cada uma ficaria mais lenta que todas juntas.
+        for (const fn of loaders) {
+          try { await fn(); } catch (e) {}
+        }
+      }
+
+      document.addEventListener('xzero:tab', (e) => abrirPainel(e.detail.panelId));
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          clearTimeout(timer);
+          return;
+        }
+        // Voltou à vista: o que está na tela pode estar velho. Recoleta já.
+        cadenciaAtual = CADENCIA_ATIVA_MS;
+        ciclo();
+        abrirPainel(painelAtual, true);
+      });
+
+      return {
+        iniciar() {
+          ciclo(true);
+          abrirPainel('panel-overview');
+        },
+        /** Usado após uma ação manual, para a tela refletir o efeito sem esperar o ciclo. */
+        atualizarAgora() {
+          cadenciaAtual = CADENCIA_ATIVA_MS;
+          ciclo();
+          abrirPainel(painelAtual, true);
+        }
+      };
+    })();
+
+    window.XzeroScheduler = Scheduler;
+    Scheduler.iniciar();
+  </script>
+</body>
+</html>

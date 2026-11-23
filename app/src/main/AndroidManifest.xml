@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MICROPHONE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CAMERA" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-feature android:name="android.hardware.camera" android:required="false" />
+    <uses-feature android:name="android.hardware.camera.autofocus" android:required="false" />
+    <uses-permission android:name="android.permission.CALL_PHONE" />
+    <uses-permission android:name="android.permission.ANSWER_PHONE_CALLS" />
+    <uses-permission android:name="android.permission.READ_PHONE_STATE" />
+    <uses-permission android:name="android.permission.READ_CONTACTS" />
+    <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+    <uses-permission android:name="android.permission.WRITE_SECURE_SETTINGS" />
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
+    <uses-permission android:name="com.android.alarm.permission.SET_ALARM" />
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO" />
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
+    <uses-permission android:name="android.permission.READ_MEDIA_AUDIO" />
+
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LAUNCHER" />
+        </intent>
+        <intent>
+            <action android:name="android.speech.RecognitionService" />
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.TTS_SERVICE" />
+        </intent>
+    </queries>
+
+    <application
+        android:allowBackup="false"
+        android:usesCleartextTraffic="true"
+        android:label="X0 / X-Zero"
+        android:icon="@drawable/ic_xenon"
+        android:theme="@android:style/Theme.Material.NoActionBar">
+
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="X0 / X-Zero"
+            android:windowSoftInputMode="adjustResize">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".BubbleService"
+            android:exported="false"
+            android:foregroundServiceType="microphone|camera|specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Assistente flutuante pessoal X0 / X-Zero com voz contínua" />
+        </service>
+
+        <activity
+            android:name=".DemoProjectionActivity"
+            android:exported="false"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
+        <service
+            android:name=".DemoRecorderService"
+            android:exported="false"
+            android:foregroundServiceType="mediaProjection|camera|microphone" />
+
+        <service
+            android:name=".AgentAccessibilityService"
+            android:exported="true"
+            android:label="X0 / X-Zero (controle de tela)"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/accessibility_config" />
+        </service>
+
+        <service
+            android:name=".NotifListener"
+            android:exported="true"
+            android:label="X0 / X-Zero (notificações)"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+
+        <receiver
+            android:name=".AdbReceiver"
+            android:exported="true"
+            android:permission="android.permission.DUMP">
+            <intent-filter>
+                <action android:name="com.xzero.agent.CONFIG" />
+                <action android:name="com.xzero.agent.GET_CONFIG" />
+                <action android:name="com.xzero.agent.ASK" />
+                <action android:name="com.xzero.agent.WAKE" />
+                <action android:name="com.xzero.agent.LISTEN" />
+                <action android:name="com.xzero.agent.ANIMATE" />
+                <action android:name="com.xzero.agent.HEALTH" />
+                <action android:name="com.xzero.agent.TRAJECTORY" />
+                <action android:name="com.xzero.agent.RECOVER" />
+                <action android:name="com.xzero.agent.BTW" />
+                <action android:name="com.xzero.agent.MCP" />
+                <action android:name="com.xzero.agent.AMBIENT_STATUS" />
+                <action android:name="com.xzero.agent.SHAKE" />
+                <action android:name="com.xzero.agent.PICKUP" />
+                <action android:name="com.xzero.agent.RULES" />
+                <action android:name="com.xzero.agent.BARGE_IN" />
+                <action android:name="com.xzero.agent.GRAPH" />
+                <action android:name="com.xzero.agent.WATCHES" />
+                <action android:name="com.xzero.agent.AUDIO" />
+                <action android:name="com.xzero.agent.VOICE" />
+                <action android:name="com.xzero.agent.PERSONA" />
+                <action android:name="com.xzero.agent.CHECKPOINT" />
+                <action android:name="com.xzero.agent.INITIATIVE" />
+                <action android:name="com.xzero.agent.EXEC_TOOL" />
+                <action android:name="com.xzero.agent.SCREEN_TREE" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Serviço de Assistente do Android (Segurar botão Power / Deslizar dos cantos) -->
+        <service
+            android:name=".AgentVoiceInteractionService"
+            android:exported="true"
+            android:label="X0 / X-Zero Assistente"
+            android:permission="android.permission.BIND_VOICE_INTERACTION">
+            <meta-data
+                android:name="android.voice_interaction"
+                android:resource="@xml/voice_interaction_service" />
+            <intent-filter>
+                <action android:name="android.service.voice.VoiceInteractionService" />
+            </intent-filter>
+        </service>
+
+        <service
+            android:name=".AgentVoiceSessionService"
+            android:permission="android.permission.BIND_VOICE_INTERACTION" />
+    </application>
+</manifest>

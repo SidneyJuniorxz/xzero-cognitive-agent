@@ -1,0 +1,610 @@
+{
+  "schema_version": 2,
+  "version": "2.1.0-rc2",
+  "status": "experimental_requires_android_visual_qa",
+  "tile": {
+    "width": 192,
+    "height": 208,
+    "origin": "top-left"
+  },
+  "sheets": {
+    "LIFELIKE": {
+      "path": "app/src/main/res/drawable/xenon_lifelike_spritesheet.png",
+      "columns": 4,
+      "rows": 4,
+      "tile_width": 192,
+      "tile_height": 208,
+      "image_width": 768,
+      "image_height": 832
+    },
+    "INTERACTIONS": {
+      "path": "app/src/main/res/drawable/xenon_interactions_spritesheet.png",
+      "columns": 4,
+      "rows": 4,
+      "tile_width": 192,
+      "tile_height": 208,
+      "image_width": 768,
+      "image_height": 832
+    },
+    "COGNITIVE": {
+      "path": "app/src/main/res/drawable/xenon_cognitive_spritesheet.png",
+      "columns": 4,
+      "rows": 4,
+      "tile_width": 192,
+      "tile_height": 208,
+      "image_width": 768,
+      "image_height": 832
+    },
+    "MOTION": {
+      "path": "app/src/main/res/drawable/xenon_motion_spritesheet.png",
+      "columns": 8,
+      "rows": 6,
+      "tile_width": 192,
+      "tile_height": 208,
+      "image_width": 1536,
+      "image_height": 1248
+    }
+  },
+  "actions": {
+    "IDLE": {
+      "sheet": "LIFELIKE",
+      "row": 0,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
+      "frame_ms": 430,
+      "loops": true,
+      "motion": "Respiracao natural e piscar"
+    },
+    "THINK": {
+      "sheet": "LIFELIKE",
+      "row": 1,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
+      "frame_ms": 365,
+      "loops": true,
+      "motion": "Mao no queixo"
+    },
+    "DEEP_THINKING": {
+      "sheet": "LIFELIKE",
+      "row": 1,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
+      "frame_ms": 365,
+      "loops": true,
+      "motion": "Mao no queixo"
+    },
+    "WAITING_IMPATIENT": {
+      "sheet": "LIFELIKE",
+      "row": 2,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
+      "frame_ms": 290,
+      "loops": true,
+      "motion": "Bater o pe"
+    },
+    "BORED_TAPPING": {
+      "sheet": "LIFELIKE",
+      "row": 2,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
+      "frame_ms": 290,
+      "loops": true,
+      "motion": "Bater o pe"
+    },
+    "FOOT_TAPPING": {
+      "sheet": "LIFELIKE",
+      "row": 2,
+      "frames": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "frame_ms": 290,
+      "loops": false,
+      "motion": "Bater o pe curta duracao"
+    },
+    "SUCCESS_HAPPY": {
+      "sheet": "LIFELIKE",
+      "row": 3,
+      "frames": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "frame_ms": 240,
+      "loops": false,
+      "motion": "Comemorar apenas evento concluido"
+    },
+    "SUCCESS_CONFIRMED": {
+      "sheet": "LIFELIKE",
+      "row": 3,
+      "frames": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "frame_ms": 240,
+      "loops": false,
+      "motion": "Comemorar apenas evento concluido"
+    },
+    "CELEBRATE": {
+      "sheet": "LIFELIKE",
+      "row": 3,
+      "frames": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "frame_ms": 240,
+      "loops": false,
+      "motion": "Comemorar apenas evento concluido"
+    },
+    "WAVE": {
+      "sheet": "INTERACTIONS",
+      "row": 0,
+      "frames": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "frame_ms": 230,
+      "loops": false,
+      "motion": "Acenar com antecipacao e retorno"
+    },
+    "WAVING_SPONTANEOUSLY": {
+      "sheet": "INTERACTIONS",
+      "row": 0,
+      "frames": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "frame_ms": 230,
+      "loops": false,
+      "motion": "Acenar com antecipacao e retorno"
+    },
+    "EXPLAIN": {
+      "sheet": "INTERACTIONS",
+      "row": 1,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
+      "frame_ms": 280,
+      "loops": true,
+      "motion": "Gestos abertos ao falar"
+    },
+    "ASKING_HELP": {
+      "sheet": "INTERACTIONS",
+      "row": 1,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
+      "frame_ms": 280,
+      "loops": true,
+      "motion": "Gestos abertos ao falar"
+    },
+    "ASKING_QUESTION": {
+      "sheet": "INTERACTIONS",
+      "row": 1,
+      "frames": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "frame_ms": 280,
+      "loops": false,
+      "motion": "Perguntar explicitamente"
+    },
+    "POINT": {
+      "sheet": "INTERACTIONS",
+      "row": 2,
+      "frames": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "frame_ms": 230,
+      "loops": false,
+      "motion": "Indicar objeto ou opcao"
+    },
+    "BLINK_LOOK": {
+      "sheet": "INTERACTIONS",
+      "row": 3,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
+      "frame_ms": 340,
+      "loops": true,
+      "motion": "Atencao e olhar lateral"
+    },
+    "LISTENING_ATTENTIVELY": {
+      "sheet": "INTERACTIONS",
+      "row": 3,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
+      "frame_ms": 340,
+      "loops": true,
+      "motion": "Atencao e olhar lateral"
+    },
+    "LOOKING_AROUND": {
+      "sheet": "INTERACTIONS",
+      "row": 3,
+      "frames": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "frame_ms": 340,
+      "loops": false,
+      "motion": "Olhar ao redor breve"
+    },
+    "ATTENDING": {
+      "sheet": "COGNITIVE",
+      "row": 0,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
+      "frame_ms": 250,
+      "loops": true,
+      "motion": "Painel holografico em uso"
+    },
+    "LAPTOP_WORK": {
+      "sheet": "COGNITIVE",
+      "row": 0,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
+      "frame_ms": 250,
+      "loops": true,
+      "motion": "Painel holografico em uso"
+    },
+    "RESEARCHING_WEB": {
+      "sheet": "COGNITIVE",
+      "row": 0,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
+      "frame_ms": 250,
+      "loops": true,
+      "motion": "Painel holografico em uso"
+    },
+    "EXECUTING_TASK": {
+      "sheet": "COGNITIVE",
+      "row": 0,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
+      "frame_ms": 250,
+      "loops": true,
+      "motion": "Painel holografico em uso"
+    },
+    "HOLOGRAM": {
+      "sheet": "COGNITIVE",
+      "row": 1,
+      "frames": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "frame_ms": 285,
+      "loops": false,
+      "motion": "Orbe holografico interativo"
+    },
+    "PLAYING_HOLOGRAM": {
+      "sheet": "COGNITIVE",
+      "row": 1,
+      "frames": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "frame_ms": 285,
+      "loops": false,
+      "motion": "Orbe holografico interativo"
+    },
+    "LEARNING_NEW": {
+      "sheet": "COGNITIVE",
+      "row": 1,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1
+      ],
+      "frame_ms": 320,
+      "loops": true,
+      "motion": "Observa informacao assimilada"
+    },
+    "ERROR_SAD": {
+      "sheet": "COGNITIVE",
+      "row": 2,
+      "frames": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "frame_ms": 340,
+      "loops": false,
+      "motion": "Falha com alerta vermelho"
+    },
+    "RECOVERING_ERROR": {
+      "sheet": "COGNITIVE",
+      "row": 2,
+      "frames": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "frame_ms": 340,
+      "loops": false,
+      "motion": "Falha com alerta vermelho"
+    },
+    "ALERT_RECOIL": {
+      "sheet": "COGNITIVE",
+      "row": 2,
+      "frames": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "frame_ms": 340,
+      "loops": false,
+      "motion": "Falha com alerta vermelho"
+    },
+    "CONFUSED": {
+      "sheet": "COGNITIVE",
+      "row": 3,
+      "frames": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "frame_ms": 340,
+      "loops": false,
+      "motion": "Duvida ou curiosidade"
+    },
+    "CURIOUS": {
+      "sheet": "COGNITIVE",
+      "row": 3,
+      "frames": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "frame_ms": 340,
+      "loops": false,
+      "motion": "Duvida ou curiosidade"
+    },
+    "RESTING": {
+      "sheet": "LIFELIKE",
+      "row": 0,
+      "frames": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "frame_ms": 460,
+      "loops": false,
+      "motion": "Pausa sutil"
+    },
+    "RUN_RIGHT": {
+      "sheet": "MOTION",
+      "row": 0,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "frame_ms": 105,
+      "loops": true,
+      "motion": "Corrida lateral com escala corrigida frente a pose frontal, inclinaçao e fase de suspensao"
+    },
+    "RUN_LEFT": {
+      "sheet": "MOTION",
+      "row": 1,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "frame_ms": 105,
+      "loops": true,
+      "motion": "Corrida lateral com escala corrigida frente a pose frontal, inclinaçao e fase de suspensao"
+    },
+    "JUMP": {
+      "sheet": "MOTION",
+      "row": 2,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "frame_ms": 175,
+      "loops": false,
+      "motion": "Salto/descoberta com retorno a base"
+    },
+    "DISCOVERY_REACTION": {
+      "sheet": "MOTION",
+      "row": 2,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "frame_ms": 175,
+      "loops": false,
+      "motion": "Salto/descoberta com retorno a base"
+    },
+    "WALL_DESCENT": {
+      "sheet": "MOTION",
+      "row": 3,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "frame_ms": 260,
+      "loops": false,
+      "motion": "Prototipo visual de descida com proporcoes preservadas - requer revisao da pose sentada"
+    },
+    "WALK_FORWARD": {
+      "sheet": "MOTION",
+      "row": 4,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "frame_ms": 145,
+      "loops": true,
+      "motion": "Caminhada frontal (em direcao a tela): corpo e cabeca em escala fixa"
+    },
+    "WALK_BACKWARD": {
+      "sheet": "MOTION",
+      "row": 5,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7
+      ],
+      "frame_ms": 145,
+      "loops": true,
+      "motion": "Caminhada de costas (afastando da tela): corpo e cabeca em escala fixa"
+    }
+  },
+  "compatibility": {
+    "android_action_count": 38,
+    "previous_core_and_emotion_assets_retained_as_fallback": true
+  },
+  "known_limitations": [
+    "WALL_DESCENT row is a placeholder storyboard, not a completed physically convincing sit/descent sequence",
+    "Android build/device tests not run here",
+    "WALK_FORWARD and WALK_BACKWARD are available as Android actions; trigger wiring requires calling setAction(WALK_FORWARD/WALK_BACKWARD) for relevant agent events",
+    "Run and walk art aligned against frontal IDLE; requires visual QA on a real device"
+  ]
+}

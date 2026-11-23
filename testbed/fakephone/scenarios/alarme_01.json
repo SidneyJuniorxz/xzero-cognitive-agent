@@ -1,0 +1,22 @@
+{
+  "id": "alarme_01",
+  "descricao": "Rota de UI completa: abrir relógio, criar alarme, digitar a hora e salvar.",
+  "task": "coloca um alarme pras 7:30",
+  "world": "screens/relogio.json",
+  "decisions": [
+    {"action": "open_app", "args": {"name": "Relógio"}, "thought": "preciso do app de relógio"},
+    {"action": "tap", "args": {"id": 0, "label": "Adicionar alarme"}, "thought": "botão de novo alarme"},
+    {"action": "type", "args": {"text": "07:30"}, "thought": "digito a hora pedida"},
+    {"action": "tap", "args": {"id": 1, "label": "OK"}, "thought": "confirmo o alarme"},
+    {"action": "done", "args": {"answer": "Alarme das 07:30 criado."}, "epistemic": "OBSERVED"}
+  ],
+  "expect": {
+    "resposta_contem_algum": ["07:30", "7:30", "alarme"],
+    "tela_final": "clock_saved",
+    "telas_visitadas": ["clock_list", "clock_time_picker", "clock_saved"],
+    "texto_digitado_contem": "07:30",
+    "apps_abertos": ["Relógio"],
+    "max_chamadas_llm": 6,
+    "nao_pode_conter": ["não consegui", "erro"]
+  }
+}

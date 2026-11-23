@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">X0 / X-Zero</string>
+    <string name="a11y_desc">Permite que o X0 / X-Zero leia a tela e toque/digite em apps quando você der um comando.</string>
+</resources>

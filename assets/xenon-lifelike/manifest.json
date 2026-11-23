@@ -1,0 +1,131 @@
+{
+  "name": "Xenon Lifelike V1",
+  "version": "v1",
+  "status": "committed_to_feature_branch_requires_android_qa",
+  "columns": 4,
+  "rows": 4,
+  "tile_width": 192,
+  "tile_height": 208,
+  "image_width": 768,
+  "image_height": 832,
+  "transparent": true,
+  "pixel_format": "indexed_png_256_with_alpha",
+  "app_path": "app/src/main/res/drawable/xenon_lifelike_spritesheet.png",
+  "asset_path": "assets/xenon-lifelike/xenon_lifelike_spritesheet.png",
+  "motions": [
+    {
+      "name": "IDLE",
+      "row": 0,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1,
+        0
+      ],
+      "frame_ms": 430,
+      "loops": true
+    },
+    {
+      "name": "THINK",
+      "row": 1,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1,
+        0
+      ],
+      "frame_ms": 370,
+      "loops": true
+    },
+    {
+      "name": "DEEP_THINKING",
+      "row": 1,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1,
+        0
+      ],
+      "frame_ms": 390,
+      "loops": true
+    },
+    {
+      "name": "WAITING_IMPATIENT",
+      "row": 2,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1,
+        0
+      ],
+      "frame_ms": 280,
+      "loops": true
+    },
+    {
+      "name": "BORED_TAPPING",
+      "row": 2,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1,
+        0
+      ],
+      "frame_ms": 290,
+      "loops": true
+    },
+    {
+      "name": "FOOT_TAPPING",
+      "row": 2,
+      "frames": [
+        0,
+        1,
+        2,
+        3,
+        2,
+        1,
+        0
+      ],
+      "frame_ms": 280,
+      "loops": false
+    },
+    {
+      "name": "SUCCESS_HAPPY",
+      "row": 3,
+      "frames": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "frame_ms": 260,
+      "loops": false
+    },
+    {
+      "name": "SUCCESS_CONFIRMED",
+      "row": 3,
+      "frames": [
+        0,
+        1,
+        2,
+        3
+      ],
+      "frame_ms": 250,
+      "loops": false
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "start": "home",
+  "screens": {
+    "home": {
+      "package": "com.android.launcher",
+      "elements": [
+        {"class": "TextView", "text": "Relógio", "flags": ["clic"], "at": [120, 1400]},
+        {"class": "TextView", "text": "WhatsApp", "flags": ["clic"], "at": [320, 1400]},
+        {"class": "TextView", "text": "Configurações", "flags": ["clic"], "at": [520, 1400]}
+      ],
+      "transitions": {"tap:0": "clock_list", "open:relógio": "clock_list", "open:relogio": "clock_list", "open:clock": "clock_list"}
+    },
+    "clock_list": {
+      "package": "com.google.android.deskclock",
+      "elements": [
+        {"class": "Button", "desc": "Adicionar alarme", "flags": ["clic"], "at": [980, 1900]},
+        {"class": "TextView", "text": "06:00", "desc": "alarme", "flags": ["clic", "desmarcado"], "at": [300, 600]}
+      ],
+      "transitions": {"tap:0": "clock_time_picker"}
+    },
+    "clock_time_picker": {
+      "package": "com.google.android.deskclock",
+      "elements": [
+        {"class": "EditText", "hint": "Hora", "flags": ["editável", "clic"], "at": [300, 700]},
+        {"class": "Button", "text": "OK", "flags": ["clic"], "at": [800, 1200]},
+        {"class": "Button", "text": "Excluir", "flags": ["clic"], "at": [600, 1200]}
+      ],
+      "transitions": {"type:*": "clock_time_typed"}
+    },
+    "clock_time_typed": {
+      "package": "com.google.android.deskclock",
+      "elements": [
+        {"class": "EditText", "text": "07:30", "flags": ["editável", "clic"], "at": [300, 700]},
+        {"class": "Button", "text": "OK", "flags": ["clic"], "at": [800, 1200]}
+      ],
+      "transitions": {"tap:1": "clock_saved"}
+    },
+    "clock_saved": {
+      "package": "com.google.android.deskclock",
+      "elements": [
+        {"class": "TextView", "text": "07:30", "desc": "alarme", "flags": ["clic", "marcado"], "at": [300, 600]},
+        {"class": "TextView", "text": "Alarme definido para 07:30", "at": [540, 1800]}
+      ],
+      "transitions": {}
+    }
+  }
+}

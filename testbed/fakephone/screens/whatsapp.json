@@ -1,0 +1,45 @@
+{
+  "start": "home",
+  "screens": {
+    "home": {
+      "package": "com.android.launcher",
+      "elements": [
+        {"class": "TextView", "text": "WhatsApp", "flags": ["clic"], "at": [320, 1400]}
+      ],
+      "transitions": {"tap:0": "wa_chats", "open:whatsapp": "wa_chats"}
+    },
+    "wa_chats": {
+      "package": "com.whatsapp",
+      "elements": [
+        {"class": "EditText", "hint": "Pesquisar", "flags": ["editável", "clic"], "at": [540, 200]},
+        {"class": "TextView", "text": "ColegaEquipe", "desc": "conversa", "flags": ["clic"], "at": [300, 500]},
+        {"class": "TextView", "text": "Apagar conversa", "flags": ["clic"], "at": [300, 1700]}
+      ],
+      "transitions": {"tap:1": "wa_chat_colegaequipe"}
+    },
+    "wa_chat_colegaequipe": {
+      "package": "com.whatsapp",
+      "elements": [
+        {"class": "EditText", "hint": "Mensagem", "flags": ["editável", "clic"], "at": [500, 1900]},
+        {"class": "Button", "desc": "Enviar", "flags": ["clic"], "at": [1000, 1900]}
+      ],
+      "transitions": {"type:*": "wa_chat_typed"}
+    },
+    "wa_chat_typed": {
+      "package": "com.whatsapp",
+      "elements": [
+        {"class": "EditText", "text": "chegando em 10 min", "flags": ["editável", "clic"], "at": [500, 1900]},
+        {"class": "Button", "desc": "Enviar", "flags": ["clic"], "at": [1000, 1900]}
+      ],
+      "transitions": {"tap:1": "wa_sent"}
+    },
+    "wa_sent": {
+      "package": "com.whatsapp",
+      "elements": [
+        {"class": "TextView", "text": "chegando em 10 min", "desc": "entregue", "at": [700, 1500]},
+        {"class": "EditText", "hint": "Mensagem", "flags": ["editável", "clic"], "at": [500, 1900]}
+      ],
+      "transitions": {}
+    }
+  }
+}

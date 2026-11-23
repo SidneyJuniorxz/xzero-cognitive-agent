@@ -1,0 +1,14 @@
+build/
+app/build/
+.gradle/
+local.properties
+*.apk
+!releases/xzero-latest.apk
+.env
+.env.*
+!.env.mcp.example
+mcp/data/
+*.db
+*.db-wal
+*.db-shm
+

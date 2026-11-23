@@ -1,0 +1,181 @@
+{
+  "versao_suite": "1.0",
+  "descricao": "Suíte fixa de cenários da ADA. Roda igual em toda release para comparar desempenho, assertividade e naturalidade entre versões.",
+  "criterios": {
+    "desempenho": "latência fim-a-fim (p50/p90/p95) e passos por tarefa",
+    "assertividade": "a tarefa atingiu o objetivo sem retrabalho nem intervenção",
+    "naturalidade": "resposta curta, sem boilerplate, sem se reapresentar",
+    "economia": "quantas tarefas resolvem sem chamar o LLM",
+    "recuperacao": "sucesso após erro, sem entrar em ciclo"
+  },
+  "cenarios": [
+    {
+      "id": "presenca_01",
+      "grupo": "instantaneo",
+      "prompt": "tá me ouvindo",
+      "espera": {
+        "max_passos": 1,
+        "max_ms": 500,
+        "sem_llm": true,
+        "resposta_contem_algum": [
+          "ouço",
+          "ouvindo",
+          "escuta",
+          "aqui"
+        ],
+        "max_palavras_resposta": 14
+      }
+    },
+    {
+      "id": "presenca_02",
+      "grupo": "instantaneo",
+      "prompt": "x zero tá na escuta",
+      "espera": {
+        "max_passos": 1,
+        "max_ms": 500,
+        "sem_llm": true,
+        "max_palavras_resposta": 14
+      }
+    },
+    {
+      "id": "bateria_01",
+      "grupo": "instantaneo",
+      "prompt": "quanto de bateria",
+      "espera": {
+        "max_passos": 1,
+        "max_ms": 500,
+        "sem_llm": true,
+        "resposta_contem_algum": [
+          "%",
+          "por cento",
+          "bateria"
+        ],
+        "max_palavras_resposta": 14
+      }
+    },
+    {
+      "id": "telemetria_01",
+      "grupo": "sem_ui",
+      "prompt": "confirmado, me diga a temperatura e a memória do aparelho",
+      "espera": {
+        "max_passos": 3,
+        "max_ms": 12000,
+        "acao_esperada": "device_status",
+        "max_palavras_resposta": 30
+      }
+    },
+    {
+      "id": "guarda_01",
+      "grupo": "guarda_atalho",
+      "prompt": "me escuta e abre o YouTube",
+      "espera": {
+        "nao_pode_ser_instantaneo": true,
+        "motivo": "frase de presença COM comando real não pode ser sequestrada pelo atalho"
+      },
+      "alta_variancia": true,
+      "nota_variancia": "depende de cold start de app externo e rede; excluído das percentis estáveis"
+    },
+    {
+      "id": "fonetica_01",
+      "grupo": "correcao_entrada",
+      "prompt": "confirmado, abra o chat GT",
+      "espera": {
+        "corrigir_para": "ChatGPT",
+        "motivo": "ASR erra ChatGPT de forma recorrente"
+      },
+      "alta_variancia": true,
+      "nota_variancia": "depende de cold start de app externo e rede; excluído das percentis estáveis"
+    },
+    {
+      "id": "erro_rota_01",
+      "grupo": "recuperacao",
+      "prompt": "confirmado, use mcp_call no servidor host-cloud-mcp com a ferramenta ferramenta_inexistente_zzz",
+      "espera": {
+        "max_passos": 6,
+        "nao_pode_entrar_em_ciclo": true,
+        "resposta_contem_algum": [
+          "não existe",
+          "nao existe",
+          "não encontrei",
+          "indisponível",
+          "inexistente"
+        ],
+        "max_palavras_resposta": 30,
+        "motivo": "Deve resolver sem ciclo e avisar que a ferramenta não existe. NÃO exige que o erro ocorra: se o grafo já aprendeu a evitar a chamada morta, melhor ainda — foi observado passando de 3 para 2 passos entre execuções por aprendizado."
+      }
+    },
+    {
+      "id": "confirmacao_01",
+      "grupo": "aceite_voz",
+      "prompt_pendente": "pode fazer isso",
+      "espera": {
+        "classificado_como": "AFFIRMATIVE",
+        "metodo_preferido": "palavra_chave",
+        "motivo": "antes era descartado pelo anti-eco por compartilhar palavras com a pergunta"
+      }
+    },
+    {
+      "id": "confirmacao_02",
+      "grupo": "aceite_voz",
+      "prompt_pendente": "Sim.",
+      "espera": {
+        "classificado_como": "AFFIRMATIVE",
+        "motivo": "pontuação quebrava o matcher antigo"
+      }
+    },
+    {
+      "id": "confirmacao_03",
+      "grupo": "aceite_voz",
+      "prompt_pendente": "pode mandar para o ColegaEquipe",
+      "espera": {
+        "classificado_como": "AFFIRMATIVE",
+        "motivo": "a palavra 'para' rejeitava indevidamente"
+      }
+    },
+    {
+      "id": "confirmacao_04",
+      "grupo": "aceite_voz",
+      "prompt_pendente": "não, manda pro ColegaEquipe",
+      "espera": {
+        "classificado_como": "ADJUST",
+        "motivo": "negação COM complemento é ajuste, não cancelamento"
+      }
+    },
+    {
+      "id": "tryagain_01",
+      "grupo": "orientacao",
+      "prompt_pendente": "volta para a tela anterior",
+      "espera": {
+        "classificado_como": "BACK",
+        "motivo": "continha 'para' e cancelava a tarefa inteira"
+      }
+    },
+    {
+      "id": "tryagain_02",
+      "grupo": "orientacao",
+      "prompt_pendente": "tenta de novo para abrir",
+      "espera": {
+        "classificado_como": "RESTART",
+        "motivo": "continha 'para' e cancelava"
+      }
+    },
+    {
+      "id": "naturalidade_01",
+      "grupo": "naturalidade",
+      "prompt": "quem é você",
+      "espera": {
+        "max_palavras_resposta": 25,
+        "nao_pode_conter": [
+          "conforme solicitado",
+          "tarefa foi concluída com sucesso",
+          "procedendo"
+        ],
+        "motivo": "medido: respostas antigas tinham 40-68 palavras se reapresentando"
+      }
+    }
+  ],
+  "metodologia": {
+    "percentis": "calculados apenas sobre cenários SEM alta_variancia, para o número comparável entre releases não ser dominado por ruído de cold start",
+    "alta_variancia": "reportados à parte, com o valor bruto"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "id": "whatsapp_01",
+  "descricao": "Enviar mensagem pela UI: abrir conversa, digitar e despachar.",
+  "task": "manda no whatsapp pro ColegaEquipe que eu chego em 10 minutos",
+  "world": "screens/whatsapp.json",
+  "decisions": [
+    {"action": "open_app", "args": {"name": "WhatsApp"}, "thought": "abrir o app"},
+    {"action": "tap", "args": {"id": 1, "label": "ColegaEquipe"}, "thought": "abrir a conversa do ColegaEquipe"},
+    {"action": "type", "args": {"text": "chegando em 10 min"}, "thought": "escrever a mensagem"},
+    {"action": "tap", "args": {"id": 1, "label": "Enviar"}, "thought": "despachar"},
+    {"action": "done", "args": {"answer": "Mandei pro ColegaEquipe: chegando em 10 min."}, "epistemic": "OBSERVED"}
+  ],
+  "expect": {
+    "resposta_contem_algum": ["colegaequipe"],
+    "tela_final": "wa_sent",
+    "texto_digitado_contem": "10 min",
+    "max_chamadas_llm": 6,
+    "nao_pode_conter": ["não consegui"]
+  }
+}

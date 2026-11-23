@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>X0 / X-Zero Control Center — Windows Desktop Edition</title>
+  <style>
+    :root {
+      --bg: #080c14;
+      --card: #0f172a;
+      --border: #1e293b;
+      --text: #f8fafc;
+      --sub: #94a3b8;
+      --cyan: #38bdf8;
+      --teal: #2dd4bf;
+      --green: #4ade80;
+      --purple: #a855f7;
+      --amber: #fbbf24;
+      --red: #f87171;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      padding: 18px;
+      line-height: 1.45;
+    }
+    .header-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .brand { display: flex; align-items: center; gap: 14px; }
+    .xenon-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      border: 2px solid var(--purple);
+      background-color: #16102c;
+      background-image: url('/xenon-spritesheet.png');
+      background-size: 800% 1100%;
+      background-position: 0% 0%;
+      flex-shrink: 0;
+    }
+    .brand h1 { font-size: 1.3rem; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .brand p { color: var(--sub); font-size: 0.82rem; margin-top: 3px; }
+    .badge {
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 3px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--teal);
+      background: #062c30;
+      color: var(--teal);
+    }
+    .badge.purple { border-color: #6366f1; background: #1e1b4b; color: #a5b4fc; }
+    .badge.green { border-color: #22c55e; background: #052e16; color: var(--green); }
+    .badge.red { border-color: #ef4444; background: #450a0a; color: #fca5a5; }
+    .badge.amber { border-color: #f59e0b; background: #422006; color: #fde68a; }
+    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    button {
+      background: #1e293b;
+      color: var(--text);
+      border: 1px solid #334155;
+      border-radius: 10px;
+      padding: 8px 14px;
+      font-weight: 600;
+      font-size: 0.84rem;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    button:hover { filter: brightness(1.15); }
+    button.cyan { background: #0284c7; border-color: var(--cyan); color: #fff; }
+    button.purple { background: #4c1d95; border-color: #8b5cf6; color: #ede9fe; }
+    button.green { background: #065f46; border-color: #10b981; color: #ecfdf5; }
+    button.danger { background: #450a0a; border-color: #ef4444; color: #fca5a5; }
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 12px;
+      margin-bottom: 14px;
+    }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+    .kpi-title { color: var(--sub); font-size: 0.82rem; font-weight: 700; }
+    .kpi-val { font-size: 1.55rem; font-weight: 800; margin: 6px 0 4px; }
+    .kpi-sub { color: #64748b; font-size: 0.76rem; }
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1.35fr 1fr;
+      gap: 14px;
+    }
+    @media (max-width: 960px) { .grid-2 { grid-template-columns: 1fr; } }
+    .stage-box {
+      background: #060911;
+      border: 1px solid #1e293b;
+      border-radius: 14px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      margin-top: 10px;
+    }
+    .xenon-stage-sprite {
+      width: 112px;
+      height: 122px;
+      background-image: url('/xenon-spritesheet.png');
+      background-size: 800% 1100%;
+      background-position: 0% 0%;
+      flex-shrink: 0;
+      filter: drop-shadow(0 8px 18px rgba(56, 189, 248, 0.35));
+      transition: transform 0.25s ease;
+    }
+    .speech-bubble {
+      background: #081426;
+      border: 1px solid #35d7ff;
+      border-radius: 12px;
+      padding: 12px 14px;
+      color: #e0f2fe;
+      font-size: 0.9rem;
+      margin-bottom: 10px;
+    }
+    input, select {
+      width: 100%;
+      background: #090d16;
+      border: 1px solid #334155;
+      color: var(--text);
+      padding: 10px 12px;
+      border-radius: 10px;
+      font-size: 0.88rem;
+      margin-bottom: 8px;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.84rem; margin-top: 8px; }
+    th, td { padding: 10px 8px; border-bottom: 1px solid #1e293b; text-align: left; }
+    th { color: #64748b; font-size: 0.74rem; text-transform: uppercase; }
+    .rule-item {
+      background: #0b1324;
+      border: 1px solid #1e3a5f;
+      border-radius: 10px;
+      padding: 10px 12px;
+      margin-bottom: 8px;
+    }
+    .rule-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+    .log-box {
+      background: #05080f;
+      border: 1px solid #1e293b;
+      border-radius: 10px;
+      padding: 10px;
+      height: 210px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 0.78rem;
+      color: #cbd5e1;
+    }
+  </style>
+</head>
+<body>
+  <header class="header-card">
+    <div class="brand">
+      <div class="xenon-avatar" id="xenon-header"></div>
+      <div>
+        <h1>
+          <span id="app-title">X0 / X-Zero Control Center</span>
+          <span class="badge" id="os-badge">Windows Desktop</span>
+          <span class="badge purple" id="state-badge">Pronto (Idle)</span>
+          <span class="badge green" id="voice-badge">🎙️ Live X0 / X-Zero ON</span>
+        </h1>
+        <p>Harness Cognitivo Autônomo • Grafo Vetorial + RL Step Scoring + Guardrails CUA + Modo Voz Live + /btw</p>
+      </div>
+    </div>
+    <div class="actions">
+      <button class="cyan" onclick="toggleBrowserLiveMic()" id="btn-mic">🎙️ Escutar Agora (Live)</button>
+      <button class="danger" onclick="triggerBargeIn()">🗣️🛑 Cortar Fala (Barge-In)</button>
+      <button onclick="scanFilesNow()">📂 Escanear Maiores Vídeos/Arquivos</button>
+      <button onclick="refreshAll()">🔄 Atualizar Telemetria</button>
+    </div>
+  </header>
+
+  <section class="kpi-grid">
+    <div class="card">
+      <div class="kpi-title">🔋 Energia & Térmica</div>
+      <div class="kpi-val" id="kpi-bat">--% ⚡</div>
+      <div class="kpi-sub" id="kpi-temp">Temperatura: --°C | Host Online</div>
+    </div>
+    <div class="card">
+      <div class="kpi-title">💾 Memória RAM & Uptime</div>
+      <div class="kpi-val" id="kpi-ram">-- / -- MB</div>
+      <div class="kpi-sub" id="kpi-uptime">Uptime: -- min | CPU Load: --</div>
+    </div>
+    <div class="card">
+      <div class="kpi-title">💡 Ambiente & Display</div>
+      <div class="kpi-val" id="kpi-display">X11 / Wayland</div>
+      <div class="kpi-sub" id="kpi-voice-score">Score Intenção Voz: 0.0 / 3.2</div>
+    </div>
+    <div class="card">
+      <div class="kpi-title">🧠 Cognição & Guardrails</div>
+      <div class="kpi-val" id="kpi-graph">-- relações</div>
+      <div class="kpi-sub" id="kpi-routes">-- regras ativas | -- rotas campeãs</div>
+    </div>
+  </section>
+
+  <div class="grid-2">
+    <div>
+      <!-- PALCO AO VIVO DO X0 / X-ZERO -->
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3>📱 Palco Ao Vivo do X0 / X-Zero (Mascote Xenon 8x11)</h3>
+          <span class="badge green" id="stage-pill">💬🎙️ LIVE (X0 ON)</span>
+        </div>
+        <div class="stage-box">
+          <div class="xenon-stage-sprite" id="xenon-stage" onclick="setSpriteRow(1, '👋 Oi! X0 / X-Zero ouvindo no Desktop.')"></div>
+          <div style="flex:1;">
+            <div class="speech-bubble" id="speech-text">⚡ X0 / X-Zero: Modo Live ativo! Fale 'X0' / 'X-Zero', envie uma tarefa ou injete um /btw em paralelo.</div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">
+              <button onclick="setSpriteRow(1, '👋 Acenando! Escuta X0 / X-Zero pronta.')">👋 Acenar</button>
+              <button onclick="setSpriteRow(4, '🚀 Energia máxima no Desktop!')">🚀 Pular</button>
+              <button onclick="setSpriteRow(6, '🔮 Consultando Grafo Vetorial + Política Q(s,a)...')">🔮 Holograma</button>
+              <button onclick="setSpriteRow(5, '⏳🎙️ PENSANDO + OUVINDO /BTW em paralelo!')">🧠 Pensar + /btw</button>
+              <button onclick="setSpriteRow(2, '🏃 Correndo pela tela!')">🏃 Correr</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- CONSOLE DE COMANDO E /BTW -->
+      <div class="card">
+        <h3>💬 Console Rápido: Comando Direto ou Injeção /btw em Paralelo</h3>
+        <p style="color:var(--sub); font-size:0.8rem; margin:4px 0 10px;">
+          Envie uma missão principal ou injete um contexto <code style="color:var(--cyan);">/btw</code> enquanto o X0 / X-Zero pensa:
+        </p>
+        <input type="text" id="cmd-input" placeholder="Ex: liste os maiores vídeos sem apagar nada ou /btw inclua também a pasta Downloads..." onkeydown="if(event.key==='Enter') sendTask()">
+        <div style="display:flex; gap:8px; flex-wrap:wrap;">
+          <button class="cyan" onclick="sendTask()">🚀 Executar Tarefa</button>
+          <button class="purple" onclick="sendBtw()">📌 Injetar /btw em Paralelo</button>
+          <button onclick="sendQuick('Ótima resposta! Mandou muito bem.')">⭐ Reforço Positivo (+RLHF)</button>
+        </div>
+      </div>
+
+      <!-- REGRAS & GUARDRAILS DO X0 / X-ZERO -->
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <h3>🛡️ Regras & Guardrails do X0 / X-Zero (Confirmar / Bloquear / Alterar)</h3>
+          <span class="badge amber">Gatekeeper CUA Ativo</span>
+        </div>
+        <div id="rules-list"></div>
+        <hr style="border:0; border-top:1px solid #1e293b; margin:12px 0;">
+        <h4 style="font-size:0.85rem; margin-bottom:8px; color:var(--sub);">➕ Criar ou Alterar Regra Permanente</h4>
+        <input type="hidden" id="rule-id">
+        <input type="text" id="rule-title" placeholder="Título da regra (ex: Confirmar antes de apagar vídeos)">
+        <input type="text" id="rule-inst" placeholder="Instrução exata (ex: Sempre pedir autorização antes de apagar ou mover para lixeira)">
+        <div style="display:flex; gap:8px; margin-bottom:8px;">
+          <select id="rule-mode">
+            <option value="CONFIRM_ALWAYS">⚠️ Confirmar Sempre (Gatekeeper)</option>
+            <option value="BLOCK_ALWAYS">🛑 Bloquear Sempre (Proibido)</option>
+            <option value="BEHAVIOR_PROMPT">🧠 Comportamento / Voz</option>
+          </select>
+          <input type="text" id="rule-kw" placeholder="Palavras-chave (ex: apagar,excluir,lixeira)">
+        </div>
+        <button class="green" onclick="saveRule()">💾 Salvar / Atualizar Regra</button>
+      </div>
+    </div>
+
+    <div>
+      <!-- STATUS DOS SERVIÇOS INTERNOS -->
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <h3>🛡️ Status dos Serviços Internos</h3>
+          <span class="badge green">100% Saudável</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Componente</th>
+              <th>Estado</th>
+              <th>Papel na Arquitetura X0 / X-Zero</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Xenon Pet & Stage</strong></td>
+              <td><span class="badge green">Ativo</span></td>
+              <td>Mascote Xenon 8x11, TTS Neural pt-BR com Barge-In e orquestrador.</td>
+            </tr>
+            <tr>
+              <td><strong>Desktop UI Driver</strong></td>
+              <td><span class="badge green">Conectado</span></td>
+              <td>Leitura de janelas, AX Tree Diff semântico, cliques e atalhos.</td>
+            </tr>
+            <tr>
+              <td><strong>Gatekeeper CUA (RuleEngine)</strong></td>
+              <td><span class="badge amber">Protegendo</span></td>
+              <td>Bloqueia exclusões proibidas e exige confirmação antes de apagar dados.</td>
+            </tr>
+            <tr>
+              <td><strong>Wake Word ("X0 / X-Zero")</strong></td>
+              <td><span class="badge green">Ativo + /btw</span></td>
+              <td>Reconhecimento contínuo ("X0", "X-Zero", "Gisele") + pausa no /btw.</td>
+            </tr>
+            <tr>
+              <td><strong>Motor LLM Primário</strong></td>
+              <td><span class="badge purple" id="srv-llm">GEMINI</span></td>
+              <td>Roteador multimodal com fallback (Gemini ↔ Claude ↔ OpenAI ↔ CUA Local).</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- LOGS & TRAJETÓRIAS -->
+      <div class="card">
+        <h3>📟 Logs & Trajetórias em Tempo Real</h3>
+        <div class="log-box" id="log-box">Carregando logs do X0 / X-Zero...</div>
+      </div>
+
+      <!-- ESPELHO DA TELA DO DESKTOP -->
+      <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+          <h3>🖥️ Espelho da Tela Desktop (Live Capture)</h3>
+          <button onclick="refreshScreen()">🔄 Capturar Agora</button>
+        </div>
+        <img id="screen-img" src="/api/screen" alt="Tela Desktop" style="width:100%; border-radius:10px; border:1px solid #1e293b; max-height:260px; object-fit:contain; background:#05080f;">
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let spriteCol = 0;
+    let spriteRow = 0;
+    let floatTick = 0;
+
+    setInterval(() => {
+      spriteCol = (spriteCol + 1) % 8;
+      floatTick += 0.25;
+      const posX = (spriteCol / 7) * 100;
+      const posY = (spriteRow / 10) * 100;
+      const h = document.getElementById('xenon-header');
+      const s = document.getElementById('xenon-stage');
+      if (h) h.style.backgroundPosition = `${posX}% ${posY}%`;
+      if (s) {
+        s.style.backgroundPosition = `${posX}% ${posY}%`;
+        s.style.transform = `translateY(${Math.sin(floatTick) * 5}px)`;
+      }
+    }, 110);
+
+    function setSpriteRow(r, msg) {
+      spriteRow = r;
+      if (msg) document.getElementById('speech-text').textContent = msg;
+    }
+
+    async function refreshAll() {
+      try {
+        const res = await fetch('/api/status');
+        const d = await res.json();
+        if (!d.ok) return;
+        document.getElementById('os-badge').textContent = `${d.platform} Desktop`;
+        document.getElementById('state-badge').textContent = d.busy ? `⏳🎙️ Pensando (${d.step})` : 'Pronto (Idle)';
+        document.getElementById('speech-text').textContent = d.latest_speech;
+        const t = d.telemetry || {};
+        document.getElementById('kpi-bat').textContent = `${t.battery_pct ?? 100}% ${t.charging ? '⚡' : '🔋'}`;
+        document.getElementById('kpi-temp').textContent = `Temperatura: ${t.temp_c ?? 40}°C | ${t.network || 'Online'}`;
+        document.getElementById('kpi-ram').textContent = `${t.ram_avail_mb ?? 0} / ${t.ram_total_mb ?? 0} MB`;
+        document.getElementById('kpi-uptime').textContent = `Uptime: ${t.uptime_min ?? 0} min | Load: ${t.cpu_load ?? '0.0'}`;
+        document.getElementById('kpi-display').textContent = t.display_server || d.platform;
+        document.getElementById('kpi-voice-score').textContent = `Score Intenção Voz: ${(d.ambient?.rolling_intent_score ?? 0).toFixed(1)} / 3.2`;
+        document.getElementById('kpi-graph').textContent = `${d.graph?.edges_count ?? 0} relações`;
+        document.getElementById('kpi-routes').textContent = `${(d.rules || []).filter(r => r.enabled).length} regras ativas | ${d.graph?.routes_count ?? 0} rotas campeãs`;
+        document.getElementById('srv-llm').textContent = `${(d.llm?.primary || 'gemini').toUpperCase()} (${d.llm?.gemini_model || 'flash'})`;
+
+        const logBox = document.getElementById('log-box');
+        if (d.logs && d.logs.length) {
+          logBox.innerHTML = d.logs.map(l => `<div>${l}</div>`).join('');
+          logBox.scrollTop = logBox.scrollHeight;
+        }
+        renderRules(d.rules || []);
+      } catch (e) {}
+    }
+
+    function renderRules(rules) {
+      const box = document.getElementById('rules-list');
+      box.innerHTML = rules.map(r => {
+        const badgeCls = r.mode === 'BLOCK_ALWAYS' ? 'red' : (r.mode === 'CONFIRM_ALWAYS' ? 'amber' : 'purple');
+        const badgeTxt = r.mode === 'BLOCK_ALWAYS' ? '🛑 BLOQUEIO' : (r.mode === 'CONFIRM_ALWAYS' ? '⚠️ CONFIRMAR' : '🧠 COMPORTAMENTO');
+        return `
+          <div class="rule-item" style="opacity:${r.enabled ? 1 : 0.55}">
+            <div class="rule-top">
+              <div>
+                <span class="badge ${badgeCls}">${badgeTxt}</span>
+                <strong style="margin-left:6px;">${r.title}</strong>
+              </div>
+              <div style="display:flex; gap:4px;">
+                <button onclick="toggleRule('${r.id}')">${r.enabled ? '✅ Ativa' : '⏸️ Off'}</button>
+                <button onclick="editRule('${r.id}', '${r.title.replace(/'/g, "\\'")}', '${r.instruction.replace(/'/g, "\\'")}', '${r.mode}')">✏️</button>
+                <button class="danger" onclick="deleteRule('${r.id}')">🗑️</button>
+              </div>
+            </div>
+            <div style="color:var(--sub); font-size:0.78rem; margin-top:5px;">${r.instruction}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    async function sendTask() {
+      const inp = document.getElementById('cmd-input');
+      const txt = inp.value.trim();
+      if (!txt) return;
+      inp.value = '';
+      setSpriteRow(5, `⏳🎙️ Executando: ${txt}...`);
+      await fetch('/api/ask', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({text: txt}) });
+      setSpriteRow(0);
+      refreshAll();
+    }
+
+    async function sendQuick(txt) {
+      await fetch('/api/ask', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({text: txt}) });
+      refreshAll();
+    }
+
+    async function sendBtw() {
+      const inp = document.getElementById('cmd-input');
+      const txt = inp.value.trim();
+      if (!txt) return;
+      inp.value = '';
+      await fetch('/api/btw', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({text: txt}) });
+      refreshAll();
+    }
+
+    async function triggerBargeIn() {
+      await fetch('/api/barge-in', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: '{}' });
+      refreshAll();
+    }
+
+    async function scanFilesNow() {
+      setSpriteRow(6, '📂 Escaneando maiores vídeos e arquivos diretamente via sistema de arquivos...');
+      await sendQuick('liste os 5 maiores vídeos e arquivos usando scan_storage_files sem apagar nada');
+      setSpriteRow(0);
+    }
+
+    async function saveRule() {
+      const payload = {
+        op: 'add',
+        id: document.getElementById('rule-id').value.trim() || undefined,
+        title: document.getElementById('rule-title').value.trim(),
+        instruction: document.getElementById('rule-inst').value.trim(),
+        mode: document.getElementById('rule-mode').value,
+        keywords: document.getElementById('rule-kw').value.trim()
+      };
+      await fetch('/api/rules', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(payload) });
+      document.getElementById('rule-id').value = '';
+      document.getElementById('rule-title').value = '';
+      document.getElementById('rule-inst').value = '';
+      refreshAll();
+    }
+
+    function editRule(id, title, inst, mode) {
+      document.getElementById('rule-id').value = id;
+      document.getElementById('rule-title').value = title;
+      document.getElementById('rule-inst').value = inst;
+      document.getElementById('rule-mode').value = mode;
+    }
+
+    async function toggleRule(id) {
+      await fetch('/api/rules', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({op: 'toggle', id}) });
+      refreshAll();
+    }
+
+    async function deleteRule(id) {
+      await fetch('/api/rules', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({op: 'remove', id}) });
+      refreshAll();
+    }
+
+    function refreshScreen() {
+      document.getElementById('screen-img').src = '/api/screen?t=' + Date.now();
+    }
+
+    // Browser Web Speech API for Continuous Live Voice ("X0" / "X-Zero" / "Gisele")
+    let rec = null;
+    let liveMicOn = false;
+    function toggleBrowserLiveMic() {
+      const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+      if (!SR) {
+        alert('Use Google Chrome ou Microsoft Edge para reconhecimento de voz contínuo no navegador, ou envie pelo console.');
+        return;
+      }
+      if (liveMicOn && rec) {
+        liveMicOn = false;
+        rec.stop();
+        document.getElementById('btn-mic').textContent = '🎙️ Escutar Agora (Live)';
+        return;
+      }
+      liveMicOn = true;
+      rec = new SR();
+      rec.lang = 'pt-BR';
+      rec.continuous = true;
+      rec.interimResults = false;
+      rec.onresult = async (ev) => {
+        const transcript = ev.results[ev.results.length - 1][0].transcript.trim();
+        if (transcript) {
+          document.getElementById('speech-text').textContent = `🎙️ Ouvido: "${transcript}"`;
+          await fetch('/api/wake', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({text: transcript}) });
+          refreshAll();
+        }
+      };
+      rec.onend = () => { if (liveMicOn) try { rec.start(); } catch(e){} };
+      rec.start();
+      document.getElementById('btn-mic').textContent = '🟢 Escutando X0 / X-Zero...';
+    }
+
+    refreshAll();
+    setInterval(refreshAll, 2500);
+  </script>
+</body>
+</html>
