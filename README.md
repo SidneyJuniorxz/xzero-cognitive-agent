@@ -24,7 +24,7 @@ O **X-Zero** pesquisa como um assistente pode perceber o contexto do Android, pl
 | Sensores, eventos, voz e avatar Xenon | Second Brain, cloud e serviços conectados por contratos |
 | Memória local, rotas e regras de segurança | Backups e integrações que dependem de configuração |
 
-### Galeria visual — assets reais do projeto
+### Galeria visual — recursos incluídos no projeto
 
 <p align="center">
   <img src="app/src/main/res/drawable/xenon_cognitive_spritesheet.png" alt="Spritesheet cognitivo do Xenon" width="43%" />
@@ -38,7 +38,16 @@ O **X-Zero** pesquisa como um assistente pode perceber o contexto do Android, pl
   <img src="app/src/main/res/drawable/xenon_interactions_spritesheet.png" alt="Interações visuais do Xenon" width="43%" />
 </p>
 
-> **Capturas reais do app e dashboard:** ainda não publicadas nesta galeria. Arquivos de backup pessoais no Google Drive não foram incorporados ao repositório público; antes de adicionar prints ou trechos de vídeo, remova notificações, contatos, nomes, URLs internas, coordenadas, tokens e identificadores do dispositivo. Sugestão de pasta para futuros screenshots revisados: `docs/images/`.
+### Animações do Xenon
+
+As duas prévias animadas abaixo já estavam versionadas neste repositório. Representam os estados e ações do avatar, **não são gravações de uma sessão pessoal**.
+
+<p align="center">
+  <img src="assets/xenon-state-previews/estados-funcionais.gif" alt="Animação dos estados funcionais do avatar Xenon" width="47%" />
+  <img src="assets/xenon-state-previews/acoes-espontaneas.gif" alt="Animação de ações espontâneas do avatar Xenon" width="47%" />
+</p>
+
+> **Capturas reais do app e dashboard:** não publicadas por padrão. Gravações pessoais e backups privados não são materiais de demonstração seguros sem revisão quadro a quadro, tratamento de áudio, remoção de metadados e nova exportação. A publicação de telas reais deve usar dados sintéticos e um ambiente isolado. Nenhuma mídia do Google Drive ou do WhatsApp foi enviada ao GitHub nesta atualização.
 
 ### Como os componentes se comunicam
 
@@ -71,7 +80,7 @@ O agente pode operar interfaces, observar eventos do telefone e executar comando
 
 Hoje, no ecossistema open-source de agentes para Android (`Opendroid`, `mobile-next/mobile-mcp`, `android-remote-control-mcp`, `Phone-MCP`, `AppAgent`, `Mobile-Agent-v2`), os projetos existentes costumam focar em apenas um recorte: ou são scripts em Python rodando no PC via ADB, ou são servidores MCP que apenas expõem cliques na tela sem inteligência própria no aparelho.
 
-O **X-Zero Open Edition** entrega para a comunidade, em um único repositório nativo Android (Kotlin) + Ponte MCP Node.js, **uma arquitetura cognitiva completa que não existia aberta de ponta a ponta**:
+O **X-Zero Open Edition** entrega para a comunidade, em um único repositório nativo Android (Kotlin) + Ponte MCP Node.js, **uma arquitetura cognitiva integrada para experimentação**:
 
 1. **Harness Cognitivo 100% On-Device com Atribuição Causal (`Agent.kt`):**
    - Não depende de PC conectado para pensar ou agir. Lê a árvore nativa do `AccessibilityService` em tempo real, compara o estado *antes* e *depois* de cada ação (`preActionScreen` $\to$ `postActionScreen`), detecta progresso real vs. estagnação (`stagnantSteps`) e separa estritamente `agent_declared_done` de `goal_verified` (`verifyGoalCompletion`).
@@ -113,16 +122,16 @@ Para que você entenda a maturidade do código que está recebendo, esta foi a l
 
 ## 🔍 Como Está o Meu Sistema Atual em Produção vs. O Que Você Recebe Neste Repositório Limpo
 
-Este repositório foi gerado diretamente a partir da minha árvore de produção (**X-Zero v3.2**), mas passou por uma **sanitização rigorosa de privacidade (Zero-PII)** para que você tenha **100% da engenharia cognitiva e 0% de dados pessoais meus**:
+Este repositório foi gerado diretamente a partir da minha árvore de produção (**X-Zero Open Edition**), mas passou por uma **separação de dados pessoais e configuração de exemplo** para que você tenha **uma base de engenharia destinada a testes e adaptação, sem incluir intencionalmente dados pessoais do ambiente original**:
 
 ### O Que Está Funcionando no Meu Ambiente Atual (e que já vem pronto no código):
-- **Calibrado em mais de 265 trajetórias reais de uso diário** em um Motorola Edge 30 (Android 14), com respostas de voz curtas e naturais (8 a 18 palavras), rigor epistêmico em 3 níveis (`OBSERVED`, `INFERRED`, `UNVERIFIABLE`) e zero alucinação visual.
+- **Testado em ambiente Android de desenvolvimento**, com respostas de voz curtas e naturais (8 a 18 palavras), rigor epistêmico em 3 níveis (`OBSERVED`, `INFERRED`, `UNVERIFIABLE`) e zero alucinação visual.
 - **30+ ferramentas nativas prontas** em `Agent.kt` + `FastPathRouter.kt` (`< 50ms`) + `HealthMonitor.kt` (auto-recuperação de Acessibilidade, fechamento automático de diálogos ANR do Android e retomada de tarefa pós-crash via `TaskCheckpoint.kt`).
 - **Co-Piloto Proativo (`InitiativeEngine.kt` + `PassiveHabitTracker.kt`)** ativo: aprende transições de apps por faixa horária sem jamais ler apps bancários/senhas, escreve um diário local auditável em Markdown (`files/diario/AAAA-MM-DD.md`), sugere caminhos de arquivos grandes quando você limpa o armazenamento e alerta sobre logs críticos.
 - **56 testes automatizados de Harness Cognitivo** em `./testbed/run.sh` validando diff causal, verificação de objetivo, política $Q(s,a)$ e guardrails antes de cada compilação.
 
 ### O Que Foi Limpo / Sanitizado Neste Repositório para Você Começar do Zero:
-- **Memórias Pessoais & Contatos Removidos:** Nenhuma conversa, trajetória antiga, contato familiar, número de telefone ou domínio privado está presente.
+- **Memórias Pessoais & Contatos Removidos:** O projeto foi preparado para não incluir conversas e dados pessoais de operação. Isso não substitui auditoria independente de arquivos, histórico Git e dependências.
 - **`USER_PROFILE.md` e `PERSONALITY.md` Limpos:** Em `app/src/main/assets/persona/`, você encontrará templates limpos e documentados para colocar o **seu nome**, o **seu estilo de comunicação** e os **seus contatos de confiança**.
 - **Grafo de Conhecimento Inicial Limpo:** O `KnowledgeGraphMemory.kt` inicia apenas com conceitos estruturais do próprio agente e aprenderá as **suas** rotinas e preferências desde o primeiro dia.
 - **Chaves e Tokens Isolados em Variáveis de Ambiente:** Nenhuma chave de API (`Gemini`, `Claude`, `OpenAI`, `Groq`, `MCP`) está no código; tudo é configurado pela tela do próprio app Android ou via `.env.mcp` (a partir do `.env.mcp.example`).
